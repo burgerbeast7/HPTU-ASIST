@@ -293,10 +293,13 @@
                             <td><strong>{{ notice.title }}</strong></td>
                             <td><span class="badge badge-blue">{{ notice.date }}</span></td>
                             <td>{{ notice.description }}</td>
-                            <td>
+                            <td style="white-space:nowrap;">
+                                <button class="btn btn-primary" onclick="editNotice('{{ id }}', '{{ notice.title }}', '{{ notice.date }}', '{{ notice.description }}')" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
                                 <form method="POST" action="{{ url_for('admin_delete_notice', notice_id=id) }}" style="display:inline;"
                                       onsubmit="return confirm('Delete this notice?');">
-                                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</button>
+                                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -319,6 +322,18 @@
                 <span class="badge badge-blue">{{ stats.total_uploads }} files</span>
             </div>
             <div class="panel-body">
+                <!-- Admin PDF Upload -->
+                <form method="POST" action="{{ url_for('admin_upload_pdf') }}" enctype="multipart/form-data" class="add-form" style="margin-bottom:20px;">
+                    <div class="field" style="min-width:300px;">
+                        <label>Upload a PDF</label>
+                        <input type="file" name="pdf" accept="application/pdf" required
+                               style="padding:7px; border:1.5px solid #dde1ea; border-radius:6px; font-size:13px;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="height:38px;">
+                        <i class="fas fa-upload"></i> Upload
+                    </button>
+                </form>
+
                 {% if uploaded_files %}
                 <table>
                     <thead>
@@ -358,7 +373,15 @@
         <div class="panel" id="chatlogs">
             <div class="panel-header">
                 <h2><i class="fas fa-comments"></i> Recent Chat Logs</h2>
-                <span class="badge badge-green">Last {{ chat_logs|length }} conversations</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="badge badge-green">Last {{ chat_logs|length }} conversations</span>
+                    {% if chat_logs %}
+                    <form method="POST" action="{{ url_for('admin_clear_chats') }}" style="display:inline;"
+                          onsubmit="return confirm('Clear all chat logs?');">
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Clear All</button>
+                    </form>
+                    {% endif %}
+                </div>
             </div>
             <div class="panel-body">
                 {% if chat_logs %}
@@ -382,6 +405,36 @@
 
     </div>
 
+    <!-- EDIT NOTICE MODAL -->
+    <div id="edit-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+         background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; padding:30px; width:450px; max-width:90%;
+             box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h3 style="margin-bottom:18px; color:#0b2c6b;"><i class="fas fa-edit"></i> Edit Notice</h3>
+            <form id="edit-form" method="POST">
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-size:12px; color:#666; margin-bottom:4px; font-weight:500;">Title</label>
+                    <input type="text" name="title" id="edit-title" required
+                           style="width:100%; padding:9px 12px; border:1.5px solid #dde1ea; border-radius:6px; font-size:13px; outline:none;">
+                </div>
+                <div style="margin-bottom:14px;">
+                    <label style="display:block; font-size:12px; color:#666; margin-bottom:4px; font-weight:500;">Date</label>
+                    <input type="text" name="date" id="edit-date"
+                           style="width:100%; padding:9px 12px; border:1.5px solid #dde1ea; border-radius:6px; font-size:13px; outline:none;">
+                </div>
+                <div style="margin-bottom:18px;">
+                    <label style="display:block; font-size:12px; color:#666; margin-bottom:4px; font-weight:500;">Description</label>
+                    <input type="text" name="description" id="edit-desc"
+                           style="width:100%; padding:9px 12px; border:1.5px solid #dde1ea; border-radius:6px; font-size:13px; outline:none;">
+                </div>
+                <div style="display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="button" onclick="closeEditModal()" class="btn" style="background:#f0f2f7; color:#333;">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Smooth scroll for sidebar links
         document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(function(link) {
@@ -389,10 +442,27 @@
                 e.preventDefault();
                 var target = document.querySelector(this.getAttribute('href'));
                 if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                // Active state
                 document.querySelectorAll('.sidebar-nav a').forEach(function(a) { a.classList.remove('active'); });
                 this.classList.add('active');
             });
+        });
+
+        // Edit notice modal
+        function editNotice(id, title, date, desc) {
+            document.getElementById('edit-title').value = title;
+            document.getElementById('edit-date').value = date;
+            document.getElementById('edit-desc').value = desc;
+            document.getElementById('edit-form').action = '/admin/notice/edit/' + id;
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+
+        // Close modal on outside click
+        document.getElementById('edit-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
         });
     </script>
 </body>

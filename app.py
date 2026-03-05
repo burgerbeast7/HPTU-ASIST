@@ -4,19 +4,26 @@ from dotenv import load_dotenv
 import os
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from pypdf import PdfReader
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = "uploads"
-app.secret_key = os.getenv("SECRET_KEY", "hptu-ai-secret-key-change-in-production")
+app.secret_key = os.getenv("SECRET_KEY", "hptu-ai-secret-key-2026-secure")
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=2)
 
-# Admin credentials (set via env vars or defaults)
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "hptu@2026")
+# Admin credentials — secured with password hashing
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD_HASH = generate_password_hash("kunal123")
+
+# Brute force protection
+failed_login_attempts = {}
+MAX_ATTEMPTS = 5
+LOCKOUT_TIME = 300  # 5 minutes in seconds
 
 # Ensure directories exist
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
@@ -218,12 +225,36 @@ def admin_login():
 
     error = None
     if request.method == "POST":
+        client_ip = request.remote_addr
+
+        # Check if locked out
+        if client_ip in failed_login_attempts:
+            attempts, last_time = failed_login_attempts[client_ip]
+            if attempts >= MAX_ATTEMPTS:
+                elapsed = (datetime.now() - last_time).total_seconds()
+                if elapsed < LOCKOUT_TIME:
+                    remaining = int((LOCKOUT_TIME - elapsed) / 60) + 1
+                    error = f"Too many failed attempts. Try again in {remaining} minute(s)."
+                    return render_template("admin_login.html", error=error)
+                else:
+                    del failed_login_attempts[client_ip]
+
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+
+        if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
             session["admin_logged_in"] = True
+            session.permanent = True
+            # Clear failed attempts on success
+            failed_login_attempts.pop(client_ip, None)
             return redirect(url_for("admin_dashboard"))
         else:
+            # Track failed attempt
+            if client_ip in failed_login_attempts:
+                count, _ = failed_login_attempts[client_ip]
+                failed_login_attempts[client_ip] = (count + 1, datetime.now())
+            else:
+                failed_login_attempts[client_ip] = (1, datetime.now())
             error = "Invalid username or password."
 
     return render_template("admin_login.html", error=error)
@@ -294,6 +325,53 @@ def admin_delete_upload(filename):
     if os.path.exists(fpath):
         os.remove(fpath)
     return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/notice/edit/<notice_id>", methods=["POST"])
+@login_required
+def admin_edit_notice(notice_id):
+    notices = load_notices()
+    if notice_id in notices:
+        title = request.form.get("title", "").strip()
+        date = request.form.get("date", "").strip()
+        description = request.form.get("description", "").strip()
+        if title:
+            notices[notice_id]["title"] = title
+        if date:
+            notices[notice_id]["date"] = date
+        if description:
+            notices[notice_id]["description"] = description
+        save_notices(notices)
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/upload", methods=["POST"])
+@login_required
+def admin_upload_pdf():
+    if "pdf" not in request.files:
+        return redirect(url_for("admin_dashboard"))
+    file = request.files["pdf"]
+    if file.filename and file.filename.lower().endswith(".pdf"):
+        file_path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        file.save(file_path)
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/clear-chats", methods=["POST"])
+@login_required
+def admin_clear_chats():
+    global chat_logs
+    chat_logs = []
+    return redirect(url_for("admin_dashboard"))
+
+
+# Block anyone trying to access /admin paths without proper auth
+@app.before_request
+def protect_admin_routes():
+    if request.path.startswith("/admin") and request.endpoint != "admin_login":
+        if not session.get("admin_logged_in"):
+            if request.endpoint and request.endpoint != "static":
+                return redirect(url_for("admin_login"))
 
 
 if __name__ == "__main__":
