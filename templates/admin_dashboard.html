@@ -194,6 +194,7 @@
             <a href="#notices"><i class="fas fa-bullhorn"></i> Notices</a>
             <a href="#uploads"><i class="fas fa-file-pdf"></i> Uploads</a>
             <a href="#chatlogs"><i class="fas fa-comments"></i> Chat Logs</a>
+            <a href="#hptu-notices"><i class="fas fa-globe"></i> HPTU Live Notices</a>
             <a href="{{ url_for('home') }}"><i class="fas fa-globe"></i> View Website</a>
         </div>
         <div class="sidebar-footer">
@@ -247,6 +248,13 @@
                 <div class="stat-info">
                     <h3 style="font-size:16px;">{{ stats.ai_status }}</h3>
                     <p>AI Service</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-globe"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.hptu_notices }}</h3>
+                    <p>HPTU Live Notices</p>
                 </div>
             </div>
         </div>
@@ -364,6 +372,80 @@
                 <div class="empty-state">
                     <i class="fas fa-file-pdf"></i>
                     No PDF files uploaded yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- HPTU LIVE NOTICES -->
+        <div class="panel" id="hptu-notices">
+            <div class="panel-header">
+                <h2><i class="fas fa-globe"></i> HPTU Official Notices</h2>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="badge badge-blue">{{ hptu_notices|length }} fetched</span>
+                    <form method="POST" action="{{ url_for('admin_fetch_hptu_notices') }}" style="display:inline;">
+                        <button type="submit" class="btn btn-primary" id="fetch-hptu-btn">
+                            <i class="fas fa-download"></i> Fetch from HPTU
+                        </button>
+                    </form>
+                    {% if hptu_notices %}
+                    <form method="POST" action="{{ url_for('admin_clear_hptu_notices') }}" style="display:inline;"
+                          onsubmit="return confirm('Clear all fetched HPTU notices?');">
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Clear</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="panel-body">
+                <p style="font-size:12px; color:#888; margin-bottom:14px;">
+                    <i class="fas fa-info-circle"></i>
+                    Notifications fetched live from <a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:600;">himtu.ac.in</a>.
+                    Click "Fetch from HPTU" to refresh.
+                </p>
+                {% if hptu_notices %}
+                <div style="max-height:500px; overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:5%;">#</th>
+                            <th style="width:50%;">Title</th>
+                            <th style="width:18%;">Publish Date</th>
+                            <th style="width:15%;">Last Date</th>
+                            <th style="width:12%;">Document</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for notice in hptu_notices %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong>{{ notice.title }}</strong></td>
+                            <td><span class="badge badge-blue">{{ notice.date }}</span></td>
+                            <td>
+                                {% if notice.last_date %}
+                                <span class="badge badge-red">{{ notice.last_date }}</span>
+                                {% else %}
+                                <span style="color:#ccc;">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if notice.link %}
+                                <a href="{{ notice.link }}" target="_blank" rel="noopener"
+                                   class="btn btn-primary" style="font-size:11px; padding:4px 10px;">
+                                    <i class="fas fa-external-link-alt"></i> View
+                                </a>
+                                {% else %}
+                                <span style="color:#ccc;">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-globe"></i>
+                    No HPTU notices fetched yet. Click "Fetch from HPTU" to download the latest notifications.
                 </div>
                 {% endif %}
             </div>

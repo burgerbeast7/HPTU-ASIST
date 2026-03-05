@@ -9,6 +9,8 @@ from functools import wraps
 from pypdf import PdfReader
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
+import requests
+from bs4 import BeautifulSoup
 
 load_dotenv()
 
@@ -112,6 +114,145 @@ def get_notices():
     return jsonify(load_notices())
 
 
+# ─── HPTU Website Scraper ─────────────────────
+HPTU_NOTICES_FILE = "data/hptu_notices.json"
+
+
+def load_hptu_notices():
+    try:
+        with open(HPTU_NOTICES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def save_hptu_notices(data):
+    with open(HPTU_NOTICES_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+
+def scrape_hptu_notices():
+    """Scrape latest notifications from the official HPTU website."""
+    notices = []
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        url = "https://www.himtu.ac.in/notice-board"
+        resp = requests.get(url, headers=headers, timeout=15)
+        resp.raise_for_status()
+
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # The notice board page uses a table with rows
+        rows = soup.select("table tbody tr")
+        if not rows:
+            # Fallback: try finding table rows without tbody
+            rows = soup.select("table tr")
+
+        for row in rows:
+            cells = row.find_all("td")
+            if len(cells) < 2:
+                continue
+
+            title = cells[0].get_text(strip=True)
+            if not title:
+                continue
+
+            date = cells[1].get_text(strip=True) if len(cells) > 1 else ""
+            last_date = cells[2].get_text(strip=True) if len(cells) > 2 else ""
+
+            # Find document download link
+            doc_link = ""
+            for cell in cells:
+                link_tag = cell.find("a", href=True)
+                if link_tag:
+                    href = link_tag["href"]
+                    if href.startswith("/"):
+                        href = "https://www.himtu.ac.in" + href
+                    if href.endswith(".pdf") or "default/files" in href or href.startswith("http"):
+                        doc_link = href
+                        break
+
+            notices.append({
+                "title": title,
+                "date": date,
+                "last_date": last_date,
+                "link": doc_link,
+                "source": "hptu_official"
+            })
+
+        # Also try scraping from the home page "What's New" ticker
+        if not notices:
+            home_resp = requests.get("https://www.himtu.ac.in/", headers=headers, timeout=15)
+            home_soup = BeautifulSoup(home_resp.text, "html.parser")
+            # Look for notification links in the marquee/ticker area
+            ticker_links = home_soup.select('.marquee-content a, .whats-new a, [class*="ticker"] a, [class*="notification"] a')
+            for link in ticker_links[:20]:
+                title = link.get_text(strip=True)
+                href = link.get("href", "")
+                if title and len(title) > 10:
+                    if href.startswith("/"):
+                        href = "https://www.himtu.ac.in" + href
+                    notices.append({
+                        "title": title,
+                        "date": "",
+                        "last_date": "",
+                        "link": href,
+                        "source": "hptu_official"
+                    })
+
+    except Exception as e:
+        print(f"HPTU Scrape Error: {e}")
+
+    return notices
+
+
+@app.route("/api/hptu-notices")
+def get_hptu_notices():
+    """Return cached HPTU notices."""
+    return jsonify(load_hptu_notices())
+
+
+# ============================================
+#          ADMIN PANEL ROUTES
+# ============================================
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return redirect(url_for("admin_login"))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def save_notices(data):
+    with open("data/notices.json", "w") as f:
+        json.dump(data, f, indent=2)
+
+
+@app.route("/admin/fetch-hptu-notices", methods=["POST"])
+@login_required
+def admin_fetch_hptu_notices():
+    """Scrape fresh notices from HPTU website and save."""
+    notices = scrape_hptu_notices()
+    if notices:
+        save_hptu_notices(notices)
+        return redirect(url_for("admin_dashboard"))
+    else:
+        # If scraping returned nothing, keep existing data
+        return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/clear-hptu-notices", methods=["POST"])
+@login_required
+def admin_clear_hptu_notices():
+    """Clear cached HPTU notices."""
+    save_hptu_notices([])
+    return redirect(url_for("admin_dashboard"))
+
+
 # Upload PDF
 @app.route("/upload", methods=["POST"])
 def upload_pdf():
@@ -211,24 +352,6 @@ def clear_pdf():
     return jsonify({"message": "PDF context cleared."})
 
 
-# ============================================
-#          ADMIN PANEL ROUTES
-# ============================================
-
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not session.get("admin_logged_in"):
-            return redirect(url_for("admin_login"))
-        return f(*args, **kwargs)
-    return decorated
-
-
-def save_notices(data):
-    with open("data/notices.json", "w") as f:
-        json.dump(data, f, indent=2)
-
-
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if session.get("admin_logged_in"):
@@ -292,17 +415,21 @@ def admin_dashboard():
                 mod_time = datetime.fromtimestamp(os.path.getmtime(fpath)).strftime("%Y-%m-%d %H:%M")
                 uploaded_files.append({"name": f, "size": size_kb, "date": mod_time})
 
+    hptu_notices = load_hptu_notices()
+
     stats = {
         "total_notices": len(notices),
         "total_uploads": len(uploaded_files),
         "total_chats": len(chat_logs),
         "ai_status": "Connected" if co else "Not Configured",
+        "hptu_notices": len(hptu_notices),
     }
 
     return render_template("admin_dashboard.html",
                            notices=notices,
                            uploaded_files=uploaded_files,
                            chat_logs=chat_logs[-20:],
+                           hptu_notices=hptu_notices,
                            stats=stats)
 
 

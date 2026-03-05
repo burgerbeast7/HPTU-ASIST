@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const entries = Object.values(data);
             if (entries.length === 0) {
-                noticesList.innerHTML = '<div class="notice-item"><div class="notice-icon"><i class="fas fa-info-circle"></i></div><div class="notice-content"><strong>No notices available at the moment.</strong></div></div>';
+                noticesList.innerHTML = '<div class="notice-item"><div class="notice-icon"><i class="fas fa-info-circle"></i></div><div class="notice-content"><strong>No announcements at the moment.</strong></div></div>';
                 return;
             }
 
@@ -262,6 +262,70 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    // ─── Load HPTU Official Notices ─────────────
+    async function loadHptuNotices() {
+        var hptuList = document.getElementById("hptu-notices-list");
+        if (!hptuList) return;
+
+        try {
+            var response = await fetch("/api/hptu-notices");
+            var data = await response.json();
+
+            hptuList.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                hptuList.innerHTML =
+                    '<div class="notice-item">' +
+                    '<div class="notice-icon"><i class="fas fa-info-circle"></i></div>' +
+                    '<div class="notice-content"><strong>No HPTU notices available. Check back later.</strong></div>' +
+                    '</div>';
+                return;
+            }
+
+            // Show up to 10 latest notices
+            var shown = data.slice(0, 10);
+            shown.forEach(function (notice) {
+                var item = document.createElement("div");
+                item.className = "notice-item";
+
+                var linkHtml = "";
+                if (notice.link) {
+                    linkHtml = ' <a href="' + notice.link + '" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:600; font-size:12px;"><i class="fas fa-external-link-alt"></i> View PDF</a>';
+                }
+
+                item.innerHTML =
+                    '<div class="notice-icon"><i class="fas fa-globe" style="color:#0b2c6b;"></i></div>' +
+                    '<div class="notice-content">' +
+                    "<strong>" + (notice.title || "Notification") + "</strong>" +
+                    "<p>" + (notice.date || "") +
+                    (notice.last_date ? " | Deadline: " + notice.last_date : "") +
+                    linkHtml + "</p>" +
+                    "</div>";
+                hptuList.appendChild(item);
+            });
+
+            // Add "View All" link
+            if (data.length > 10) {
+                var viewAll = document.createElement("div");
+                viewAll.className = "notice-item";
+                viewAll.innerHTML =
+                    '<div class="notice-icon"><i class="fas fa-arrow-right" style="color:#f4b400;"></i></div>' +
+                    '<div class="notice-content">' +
+                    '<a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:700;">View all ' + data.length + ' notifications on HPTU website →</a>' +
+                    '</div>';
+                hptuList.appendChild(viewAll);
+            }
+        } catch (e) {
+            console.error("Failed to load HPTU notices:", e);
+            hptuList.innerHTML =
+                '<div class="notice-item">' +
+                '<div class="notice-icon"><i class="fas fa-exclamation-triangle" style="color:#c0392b;"></i></div>' +
+                '<div class="notice-content"><strong>Could not load HPTU notices.</strong><p>Please check back later.</p></div>' +
+                '</div>';
+        }
+    }
+
+    loadHptuNotices();
     loadNotices();
 
     // ─── Smooth Scroll for Nav Links ────────────
