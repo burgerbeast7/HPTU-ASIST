@@ -1,4 +1,26 @@
 /* =========================
+   HPTU BRAND COLORS
+   Based on official himtu.ac.in
+========================= */
+:root {
+    --hptu-navy: #0b2c6b;
+    --hptu-navy-dark: #071e4a;
+    --hptu-blue: #143d8d;
+    --hptu-blue-light: #1a4fa0;
+    --hptu-gold: #f4b400;
+    --hptu-gold-dark: #e0a800;
+    --hptu-gold-light: #fff5d4;
+    --hptu-bg: #f5f6fa;
+    --hptu-bg-alt: #eef1f8;
+    --hptu-card: #ffffff;
+    --hptu-text: #222;
+    --hptu-text-light: #555;
+    --hptu-text-muted: #666;
+    --hptu-border: #e8ecf2;
+    --primary: #0b2c6b;
+}
+
+/* =========================
    GLOBAL SETTINGS
 ========================= */
 * {
@@ -17,8 +39,8 @@ html {
 
 body {
     font-family: "Segoe UI", Arial, sans-serif;
-    background-color: #f5f6fa;
-    color: #222;
+    background-color: var(--hptu-bg);
+    color: var(--hptu-text);
     line-height: 1.6;
 }
 
@@ -708,6 +730,44 @@ footer {
     box-shadow: 0 1px 4px rgba(0,0,0,0.06);
     border: 1px solid #e8ecf2;
     word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.msg-bubble a {
+    color: #0b2c6b;
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 1px dashed #0b2c6b;
+    transition: all 0.2s ease;
+    word-break: break-all;
+}
+
+.msg-bubble a:hover {
+    color: #f4b400;
+    border-bottom-color: #f4b400;
+}
+
+.msg-bubble a i.fa-external-link-alt {
+    font-size: 9px;
+    margin-left: 3px;
+    opacity: 0.7;
+}
+
+.msg-bubble .chat-heading {
+    display: block;
+    color: #0b2c6b;
+    font-size: 14px;
+    margin: 4px 0 2px;
+}
+
+.msg-bubble hr.chat-divider {
+    border: none;
+    border-top: 1px solid #e8ecf2;
+    margin: 6px 0;
+}
+
+.msg-bubble strong {
+    color: #0b2c6b;
 }
 
 /* User Message */
@@ -976,5 +1036,438 @@ footer {
     .top-bar-content {
         justify-content: center;
         font-size: 11px;
+    }
+}
+
+/* ===================== LIVE STATS BAR ===================== */
+.live-stats-bar {
+    background: linear-gradient(135deg, var(--hptu-navy) 0%, var(--hptu-blue) 100%);
+    padding: 16px 0;
+    border-bottom: 3px solid var(--hptu-gold);
+}
+
+.live-stats-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.live-stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.live-stat i {
+    font-size: 20px;
+    color: var(--hptu-gold);
+}
+
+.live-stat .stat-value {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--hptu-gold);
+}
+
+.live-stat .stat-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    display: block;
+}
+
+/* ===================== AUTO-UPDATE BADGE ===================== */
+.auto-update-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(244, 180, 0, 0.2);
+    color: var(--hptu-gold);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    animation: pulse-badge 2s ease-in-out infinite;
+}
+
+.auto-update-badge i {
+    font-size: 10px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes pulse-badge {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ===================== NOTICE FILTERS ===================== */
+.notice-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 0 5px;
+}
+
+.filter-btn {
+    padding: 8px 18px;
+    border: 2px solid #dde1ea;
+    background: #ffffff;
+    color: var(--hptu-text-light);
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    border-color: var(--hptu-navy);
+    color: var(--hptu-navy);
+    background: rgba(11, 44, 107, 0.05);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, var(--hptu-navy), var(--hptu-blue));
+    color: #fff;
+    border-color: var(--hptu-navy);
+    box-shadow: 0 4px 15px rgba(11, 44, 107, 0.3);
+}
+
+/* ===================== SECTION SUBTITLE ===================== */
+.section-subtitle {
+    font-size: 15px;
+    color: var(--hptu-text-muted);
+    margin-bottom: 25px;
+    font-weight: 400;
+}
+
+/* ===================== SYLLABUS SECTION ===================== */
+.syllabus-section {
+    padding: 60px 0;
+    background: var(--hptu-bg-alt);
+}
+
+.syllabus-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.syllabus-card {
+    background: var(--hptu-card);
+    border: 1px solid var(--hptu-border);
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--hptu-navy);
+}
+
+.syllabus-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(11, 44, 107, 0.12);
+}
+
+.syllabus-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--hptu-navy), var(--hptu-blue));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.syllabus-icon i {
+    font-size: 22px;
+    color: var(--hptu-gold);
+}
+
+.syllabus-info {
+    flex: 1;
+}
+
+.syllabus-info h4 {
+    color: var(--hptu-navy);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.syllabus-program {
+    display: inline-block;
+    background: rgba(11, 44, 107, 0.08);
+    color: var(--hptu-navy);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.syllabus-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--hptu-blue);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.syllabus-download:hover {
+    color: var(--hptu-gold-dark);
+}
+
+.syllabus-download i {
+    font-size: 14px;
+}
+
+/* ===================== FEES SECTION ===================== */
+.fees-section {
+    padding: 60px 30px;
+}
+
+.fees-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.fee-card {
+    background: var(--hptu-card);
+    border: 1px solid var(--hptu-border);
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--hptu-gold);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.fee-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(11, 44, 107, 0.12);
+}
+
+.fee-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--hptu-gold), var(--hptu-gold-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fee-icon i {
+    font-size: 22px;
+    color: var(--hptu-navy);
+}
+
+.fee-info {
+    flex: 1;
+}
+
+.fee-info h4 {
+    color: var(--hptu-navy);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.fee-info p {
+    color: var(--hptu-text-muted);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.fee-amount {
+    display: inline-block;
+    background: var(--hptu-gold-light);
+    color: #8a6d00;
+    padding: 4px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.fee-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--hptu-blue);
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.fee-download:hover {
+    color: var(--hptu-gold-dark);
+}
+
+/* ===================== LOADING & EMPTY PLACEHOLDERS ===================== */
+.loading-placeholder,
+.empty-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--hptu-text-muted);
+}
+
+.loading-placeholder i,
+.empty-placeholder i {
+    font-size: 36px;
+    margin-bottom: 12px;
+    display: block;
+    color: var(--hptu-navy);
+    opacity: 0.5;
+}
+
+.loading-placeholder p,
+.empty-placeholder p {
+    font-size: 14px;
+}
+
+.loading-placeholder i {
+    animation: spin 1.5s linear infinite;
+}
+
+/* ===================== NOTICE CATEGORY BADGES ===================== */
+.notice-category-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+}
+
+.badge-examination {
+    background: rgba(244, 180, 0, 0.15);
+    color: #c08a00;
+}
+
+.badge-admission {
+    background: rgba(11, 44, 107, 0.1);
+    color: var(--hptu-navy);
+}
+
+.badge-fees {
+    background: rgba(46, 125, 50, 0.12);
+    color: #2e7d32;
+}
+
+.badge-syllabus {
+    background: rgba(20, 61, 141, 0.1);
+    color: var(--hptu-blue);
+}
+
+.badge-recruitment {
+    background: rgba(198, 40, 40, 0.1);
+    color: #c62828;
+}
+
+.badge-general {
+    background: rgba(120, 120, 120, 0.1);
+    color: #757575;
+}
+
+.ai-scanned-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(11, 44, 107, 0.08);
+    color: var(--hptu-navy);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+}
+
+.ai-scanned-badge i {
+    font-size: 9px;
+}
+
+/* ===================== RESPONSIVE: NEW SECTIONS ===================== */
+@media (max-width: 768px) {
+    .live-stats-content {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+
+    .live-stat {
+        justify-content: center;
+    }
+
+    .notice-filters {
+        justify-content: center;
+    }
+
+    .syllabus-grid,
+    .fees-container {
+        grid-template-columns: 1fr;
+    }
+
+    .syllabus-section,
+    .fees-section {
+        padding: 40px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-btn {
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+
+    .syllabus-card,
+    .fee-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .syllabus-info,
+    .fee-info {
+        text-align: center;
+    }
+
+    .section-title h2 {
+        font-size: 22px;
     }
 }

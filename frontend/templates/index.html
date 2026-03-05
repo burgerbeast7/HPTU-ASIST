@@ -16,6 +16,9 @@
             <span><i class="fas fa-phone-alt"></i> 01972-223504</span>
             <span><i class="fas fa-envelope"></i> info@himtu.ac.in</span>
             <span><i class="fas fa-map-marker-alt"></i> Hamirpur, HP - 177001</span>
+            <span class="auto-update-badge" id="auto-update-badge">
+                <i class="fas fa-sync-alt fa-spin"></i> Auto-updating
+            </span>
         </div>
     </div>
 
@@ -45,9 +48,9 @@
         <div class="nav-content">
             <a href="#about"><i class="fas fa-info-circle"></i> About</a>
             <a href="#programs"><i class="fas fa-graduation-cap"></i> Programs</a>
-            <a href="#admissions"><i class="fas fa-user-plus"></i> Admissions</a>
-            <a href="#examinations"><i class="fas fa-file-alt"></i> Examinations</a>
-            <a href="#notices"><i class="fas fa-bullhorn"></i> Notices</a>
+            <a href="#notices"><i class="fas fa-bullhorn"></i> Notifications</a>
+            <a href="#syllabus"><i class="fas fa-book"></i> Syllabus</a>
+            <a href="#fees"><i class="fas fa-rupee-sign"></i> Fees</a>
             <a href="#contact"><i class="fas fa-phone"></i> Contact</a>
         </div>
         <button class="nav-toggle" id="nav-toggle" title="Toggle navigation"><i class="fas fa-bars"></i></button>
@@ -58,10 +61,32 @@
         <div class="hero-overlay">
             <div class="hero-text">
                 <h2>Welcome to HPTU AI Assistant</h2>
-                <p>Your intelligent companion for all university-related queries — admissions, exams, results & more</p>
+                <p>Real-time notifications, exam updates, syllabus, fees & instant AI answers — all in one place</p>
                 <button class="hero-cta" id="open-chat-hero">
-                    <i class="fas fa-robot"></i> Start Chatting with AI
+                    <i class="fas fa-robot"></i> Ask AI Assistant
                 </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- LIVE STATS BAR -->
+    <section class="live-stats-bar">
+        <div class="live-stats-content">
+            <div class="live-stat">
+                <i class="fas fa-bell"></i>
+                <span id="stat-notices">0</span> Live Notifications
+            </div>
+            <div class="live-stat">
+                <i class="fas fa-file-pdf"></i>
+                <span id="stat-pdfs">0</span> PDFs Scanned
+            </div>
+            <div class="live-stat">
+                <i class="fas fa-book"></i>
+                <span id="stat-syllabus">0</span> Syllabus Items
+            </div>
+            <div class="live-stat">
+                <i class="fas fa-clock"></i>
+                Last Updated: <span id="stat-updated">Loading...</span>
             </div>
         </div>
     </section>
@@ -89,9 +114,9 @@
                 <p>University conducts end-semester exams for all affiliated colleges. Results and date sheets available on the official website.</p>
             </div>
             <div class="card">
-                <div class="card-icon"><i class="fas fa-user-graduate"></i></div>
-                <h3>Admissions</h3>
-                <p>Admissions through HPCET, JEE Main, GATE, MAT/CMAT. Lateral entry available for diploma holders into B.Tech programs.</p>
+                <div class="card-icon"><i class="fas fa-robot"></i></div>
+                <h3>AI Assistant</h3>
+                <p>Ask our AI chatbot anything about HPTU — it knows the latest notifications, exam schedules, fees, and more in real-time!</p>
             </div>
         </div>
     </section>
@@ -136,36 +161,74 @@
         </div>
     </section>
 
-    <!-- NOTICES SECTION -->
+    <!-- NOTIFICATIONS SECTION -->
     <section class="notices-section" id="notices">
         <div class="section-title">
-            <h2>Latest Notices</h2>
+            <h2><i class="fas fa-bell" style="color:#f4b400;"></i> Live Notifications</h2>
             <div class="title-line"></div>
+            <p class="section-subtitle">Auto-updated from HPTU official website</p>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="notice-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="examination">Exams</button>
+            <button class="filter-btn" data-filter="admission">Admissions</button>
+            <button class="filter-btn" data-filter="fees">Fees</button>
+            <button class="filter-btn" data-filter="syllabus">Syllabus</button>
+            <button class="filter-btn" data-filter="general">General</button>
         </div>
 
         <!-- HPTU Official Notices -->
-        <h3 style="color:#0b2c6b; margin-bottom:12px; font-size:16px;">
-            <i class="fas fa-globe" style="color:#f4b400;"></i> HPTU Official Notifications
-        </h3>
         <div class="notices-list" id="hptu-notices-list">
             <div class="notice-item">
                 <div class="notice-icon"><i class="fas fa-spinner fa-spin"></i></div>
                 <div class="notice-content">
-                    <strong>Loading HPTU notices...</strong>
+                    <strong>Loading live notifications...</strong>
                 </div>
             </div>
         </div>
 
-        <!-- University Notices -->
-        <h3 style="color:#0b2c6b; margin:24px 0 12px; font-size:16px;">
+        <!-- University Announcements -->
+        <h3 style="color:#0b2c6b; margin:30px 0 12px; font-size:16px;">
             <i class="fas fa-bullhorn" style="color:#f4b400;"></i> University Announcements
         </h3>
         <div class="notices-list" id="notices-list">
             <div class="notice-item">
                 <div class="notice-icon"><i class="fas fa-bell"></i></div>
                 <div class="notice-content">
-                    <strong>Loading notices...</strong>
+                    <strong>Loading announcements...</strong>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SYLLABUS SECTION -->
+    <section class="syllabus-section" id="syllabus">
+        <div class="section-title">
+            <h2><i class="fas fa-book" style="color:#f4b400;"></i> Syllabus & Curriculum</h2>
+            <div class="title-line"></div>
+            <p class="section-subtitle">Download latest syllabus for your program</p>
+        </div>
+        <div class="syllabus-grid" id="syllabus-list">
+            <div class="syllabus-item loading-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading syllabus data...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEES SECTION -->
+    <section class="fees-section" id="fees">
+        <div class="section-title">
+            <h2><i class="fas fa-rupee-sign" style="color:#f4b400;"></i> Fee Structure</h2>
+            <div class="title-line"></div>
+            <p class="section-subtitle">Current fee details for various programs</p>
+        </div>
+        <div class="fees-container" id="fees-list">
+            <div class="fee-item loading-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading fee information...</p>
             </div>
         </div>
     </section>
@@ -205,28 +268,28 @@
         <div class="footer-content">
             <div class="footer-col">
                 <h4>HPTU AI Assistant</h4>
-                <p>An AI-powered smart helpdesk system for Himachal Pradesh Technical University, designed to assist students, faculty and visitors.</p>
+                <p>An AI-powered smart helpdesk system with real-time data from HPTU official website. Auto-updates notifications, syllabus, and fees.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
                     <li><a href="https://www.himtu.ac.in" target="_blank" rel="noopener">Official Website</a></li>
                     <li><a href="#about">About HPTU</a></li>
-                    <li><a href="#programs">Programs</a></li>
-                    <li><a href="#notices">Notices</a></li>
+                    <li><a href="#notices">Notifications</a></li>
+                    <li><a href="#syllabus">Syllabus</a></li>
                 </ul>
             </div>
             <div class="footer-col">
                 <h4>Student Resources</h4>
                 <ul>
-                    <li><a href="#examinations">Exam Info</a></li>
-                    <li><a href="#admissions">Admissions</a></li>
+                    <li><a href="#fees">Fee Structure</a></li>
+                    <li><a href="#programs">Programs</a></li>
                     <li><a href="#contact">Contact Us</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 HPTU AI Assistant — Capstone Project. Not an official HPTU website.</p>
+            <p>&copy; 2026 Kunal Chauhan — HPTU AI Assistant | B.Tech CSE, Himachal Pradesh Technical University</p>
         </div>
     </footer>
 
@@ -237,7 +300,7 @@
                 <div class="chat-avatar"><i class="fas fa-robot"></i></div>
                 <div>
                     <strong>HPTU AI Assistant</strong>
-                    <span class="chat-status" id="chat-status">● Online</span>
+                    <span class="chat-status" id="chat-status">● Online — Real-time Data</span>
                 </div>
             </div>
             <div class="chat-header-actions">
@@ -255,13 +318,13 @@
                 <div class="msg-avatar"><i class="fas fa-robot"></i></div>
                 <div class="msg-bubble">
                     👋 Welcome to <strong>HPTU AI Assistant!</strong><br><br>
-                    I can help you with:<br>
-                    • Admissions & eligibility<br>
-                    • Exam schedules & results<br>
-                    • Programs & courses<br>
-                    • University contacts<br>
-                    • PDF document queries<br><br>
-                    Ask me anything about HPTU!
+                    I have <strong>real-time access</strong> to HPTU data including:<br>
+                    • 📋 Latest notifications & circulars<br>
+                    • 📝 Exam schedules & results<br>
+                    • 📚 Syllabus & curriculum<br>
+                    • 💰 Fee structure details<br>
+                    • 📄 Content from official PDFs<br><br>
+                    Ask me anything — I know what's happening at HPTU right now!
                 </div>
             </div>
         </div>
@@ -271,8 +334,8 @@
             <label for="pdfFile" class="upload-label" title="Upload a PDF to ask questions about it">
                 <i class="fas fa-paperclip"></i>
             </label>
-            <input type="file" id="pdfFile" accept="application/pdf" class="hidden" title="Choose a PDF file to upload">
-            <input type="text" id="user-input" placeholder="Type your question here..." autocomplete="off">
+            <input type="file" id="pdfFile" accept="application/pdf" class="hidden" title="Choose a PDF file">
+            <input type="text" id="user-input" placeholder="Ask about notices, exams, fees, syllabus..." autocomplete="off">
             <button id="send-message" title="Send message">
                 <i class="fas fa-paper-plane"></i>
             </button>

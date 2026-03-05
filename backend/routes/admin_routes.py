@@ -1,14 +1,18 @@
 """
-Admin Routes — Dashboard, Authentication, Notice/Upload/Chat Management
+Admin Routes — Dashboard, Authentication, Data Management, Scraper Controls
 """
 import os
 import uuid
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, session, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, session, jsonify, current_app
 from werkzeug.security import check_password_hash
 
-from backend.services.notice_service import load_notices, save_notices, load_hptu_notices, save_hptu_notices
-from backend.services.scraper_service import scrape_hptu_notices
+from backend.services.notice_service import (
+    load_notices, save_notices, load_hptu_notices, save_hptu_notices,
+    load_syllabus, load_fees, load_scraped_pdfs, load_scraper_status,
+    load_chat_logs
+)
+from backend.services.scraper_service import scrape_hptu_notices, run_full_scrape
 from backend.services.chat_service import chat_logs
 from backend.utils.auth import login_required
 
@@ -20,7 +24,7 @@ failed_login_attempts = {}
 
 @admin_bp.before_request
 def protect_admin():
-    """Protect all admin routes — redirect to login if not authenticated."""
+    """Protect all admin routes."""
     if request.endpoint in ("admin.login", "admin.logout"):
         return None
     if not session.get("admin_logged_in"):
@@ -31,7 +35,6 @@ def protect_admin():
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Admin login page with brute-force protection."""
     if session.get("admin_logged_in"):
         return redirect(url_for("admin.dashboard"))
 
@@ -41,7 +44,6 @@ def login():
         max_attempts = current_app.config["MAX_LOGIN_ATTEMPTS"]
         lockout_time = current_app.config["LOCKOUT_TIME"]
 
-        # Check if locked out
         if client_ip in failed_login_attempts:
             attempts, last_time = failed_login_attempts[client_ip]
             if attempts >= max_attempts:
@@ -75,7 +77,6 @@ def login():
 
 @admin_bp.route("/logout")
 def logout():
-    """Log out the admin."""
     session.pop("admin_logged_in", None)
     return redirect(url_for("admin.login"))
 
@@ -85,9 +86,13 @@ def logout():
 @admin_bp.route("/")
 @login_required
 def dashboard():
-    """Admin dashboard with stats, notices, uploads, and chat logs."""
     notices = load_notices()
     hptu_notices = load_hptu_notices()
+    syllabus = load_syllabus()
+    fees = load_fees()
+    scraped_pdfs = load_scraped_pdfs()
+    scraper_status = load_scraper_status()
+    db_chat_logs = load_chat_logs(50)
 
     # Get uploaded PDF files
     uploaded_files = []
@@ -104,16 +109,26 @@ def dashboard():
     stats = {
         "total_notices": len(notices),
         "total_uploads": len(uploaded_files),
-        "total_chats": len(chat_logs),
+        "total_chats": len(db_chat_logs) or len(chat_logs),
         "ai_status": "Connected" if co else "Not Configured",
         "hptu_notices": len(hptu_notices),
+        "syllabus_count": len(syllabus),
+        "fees_count": len(fees),
+        "pdfs_scanned": len(scraped_pdfs),
     }
+
+    # Use DB chat logs if available, otherwise in-memory
+    display_logs = db_chat_logs if db_chat_logs else chat_logs[-20:]
 
     return render_template("admin/dashboard.html",
                            notices=notices,
                            uploaded_files=uploaded_files,
-                           chat_logs=chat_logs[-20:],
+                           chat_logs=display_logs,
                            hptu_notices=hptu_notices,
+                           syllabus=syllabus,
+                           fees=fees,
+                           scraped_pdfs=scraped_pdfs,
+                           scraper_status=scraper_status,
                            stats=stats)
 
 
@@ -122,7 +137,6 @@ def dashboard():
 @admin_bp.route("/notice/add", methods=["POST"])
 @login_required
 def add_notice():
-    """Add a new notice."""
     notices = load_notices()
     notice_id = "notice_" + uuid.uuid4().hex[:8]
     notices[notice_id] = {
@@ -137,7 +151,6 @@ def add_notice():
 @admin_bp.route("/notice/delete/<notice_id>", methods=["POST"])
 @login_required
 def delete_notice(notice_id):
-    """Delete a notice by ID."""
     notices = load_notices()
     notices.pop(notice_id, None)
     save_notices(notices)
@@ -147,7 +160,6 @@ def delete_notice(notice_id):
 @admin_bp.route("/notice/edit/<notice_id>", methods=["POST"])
 @login_required
 def edit_notice(notice_id):
-    """Edit an existing notice."""
     notices = load_notices()
     if notice_id in notices:
         title = request.form.get("title", "").strip()
@@ -168,7 +180,6 @@ def edit_notice(notice_id):
 @admin_bp.route("/upload", methods=["POST"])
 @login_required
 def upload_pdf():
-    """Upload a PDF from admin panel."""
     if "pdf" not in request.files:
         return redirect(url_for("admin.dashboard"))
     file = request.files["pdf"]
@@ -181,7 +192,6 @@ def upload_pdf():
 @admin_bp.route("/upload/delete/<filename>", methods=["POST"])
 @login_required
 def delete_upload(filename):
-    """Delete an uploaded file."""
     fpath = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
     if os.path.exists(fpath):
         os.remove(fpath)
@@ -193,27 +203,33 @@ def delete_upload(filename):
 @admin_bp.route("/clear-chats", methods=["POST"])
 @login_required
 def clear_chats():
-    """Clear all chat logs."""
     from backend.services.chat_service import clear_chat_logs
     clear_chat_logs()
     return redirect(url_for("admin.dashboard"))
 
 
-# ─── HPTU Live Notices ───────────────────────────
+# ─── HPTU Data Scraper Controls ──────────────────
 
 @admin_bp.route("/fetch-hptu-notices", methods=["POST"])
 @login_required
 def fetch_hptu_notices():
-    """Scrape fresh notices from HPTU website and save."""
+    """Quick fetch — just notices from HPTU."""
     notices = scrape_hptu_notices()
     if notices:
         save_hptu_notices(notices)
     return redirect(url_for("admin.dashboard"))
 
 
+@admin_bp.route("/run-full-scrape", methods=["POST"])
+@login_required
+def trigger_full_scrape():
+    """Run full comprehensive scrape (notices + PDFs + syllabus + fees)."""
+    status = run_full_scrape()
+    return redirect(url_for("admin.dashboard"))
+
+
 @admin_bp.route("/clear-hptu-notices", methods=["POST"])
 @login_required
 def clear_hptu_notices():
-    """Clear cached HPTU notices."""
     save_hptu_notices([])
     return redirect(url_for("admin.dashboard"))

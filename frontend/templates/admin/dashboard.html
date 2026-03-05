@@ -9,13 +9,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: "Segoe UI", Arial, sans-serif; background: #f0f2f7; color: #222; }
 
-        /* Sidebar */
         .sidebar {
-            position: fixed; top: 0; left: 0;
-            width: 240px; height: 100vh;
+            position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
             background: linear-gradient(180deg, #071e4a 0%, #0b2c6b 100%);
-            color: #fff; padding-top: 0; z-index: 100;
-            overflow-y: auto;
+            color: #fff; z-index: 100; overflow-y: auto;
         }
         .sidebar-brand {
             padding: 22px 18px; border-bottom: 3px solid #f4b400;
@@ -49,10 +46,8 @@
         }
         .sidebar-footer a:hover { color: #f4b400; }
 
-        /* Main Content */
         .main { margin-left: 240px; padding: 25px 30px; min-height: 100vh; }
 
-        /* Top Bar */
         .topbar {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 28px; flex-wrap: wrap; gap: 10px;
@@ -70,9 +65,8 @@
         }
         .topbar-right a.outline:hover { background: #0b2c6b; color: #fff; }
 
-        /* Stat Cards */
         .stats-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 18px; margin-bottom: 30px;
         }
         .stat-card {
@@ -82,17 +76,16 @@
         }
         .stat-icon {
             width: 50px; height: 50px; border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px;
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
         }
         .stat-icon.blue { background: #e8eef8; color: #0b2c6b; }
         .stat-icon.gold { background: #fff5d4; color: #d4a200; }
         .stat-icon.green { background: #e6f7ef; color: #27ae60; }
         .stat-icon.red { background: #fdecea; color: #c0392b; }
+        .stat-icon.purple { background: #f0e6ff; color: #7c3aed; }
         .stat-info h3 { font-size: 24px; color: #222; }
         .stat-info p { font-size: 12px; color: #888; margin-top: 2px; }
 
-        /* Panels */
         .panel {
             background: #fff; border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -101,11 +94,11 @@
         .panel-header {
             padding: 16px 20px; border-bottom: 1px solid #eef1f5;
             display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
         }
         .panel-header h2 { font-size: 16px; color: #0b2c6b; display: flex; align-items: center; gap: 8px; }
         .panel-body { padding: 20px; }
 
-        /* Table */
         table { width: 100%; border-collapse: collapse; }
         table th {
             background: #f8f9fc; padding: 10px 14px;
@@ -125,8 +118,9 @@
         .badge-blue { background: #e8eef8; color: #0b2c6b; }
         .badge-green { background: #e6f7ef; color: #27ae60; }
         .badge-red { background: #fdecea; color: #c0392b; }
+        .badge-gold { background: #fff5d4; color: #8a6d00; }
+        .badge-purple { background: #f0e6ff; color: #7c3aed; }
 
-        /* Buttons */
         .btn {
             padding: 6px 14px; border: none; border-radius: 5px;
             font-size: 12px; cursor: pointer; font-weight: 500;
@@ -136,8 +130,9 @@
         .btn-danger:hover { background: #f5c6cb; }
         .btn-primary { background: #0b2c6b; color: #fff; }
         .btn-primary:hover { background: #143d8d; }
+        .btn-success { background: #e6f7ef; color: #27ae60; }
+        .btn-success:hover { background: #c8f0d8; }
 
-        /* Add Notice Form */
         .add-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
         .add-form .field { flex: 1; min-width: 160px; }
         .add-form label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 500; }
@@ -148,28 +143,38 @@
         .add-form input:focus, .add-form textarea:focus { border-color: #0b2c6b; }
         .add-form .field-desc { min-width: 250px; }
 
-        /* Chat Log */
         .chat-log-item {
             padding: 12px 0; border-bottom: 1px solid #f5f5f5;
             display: flex; gap: 12px; align-items: flex-start;
         }
         .chat-log-item:last-child { border-bottom: none; }
-        .chat-time {
-            font-size: 11px; color: #999; min-width: 100px; padding-top: 2px;
-        }
+        .chat-time { font-size: 11px; color: #999; min-width: 100px; padding-top: 2px; }
         .chat-messages { flex: 1; }
-        .chat-user {
-            font-size: 13px; color: #0b2c6b; font-weight: 600; margin-bottom: 4px;
-        }
+        .chat-user { font-size: 13px; color: #0b2c6b; font-weight: 600; margin-bottom: 4px; }
         .chat-bot { font-size: 12.5px; color: #555; }
 
-        /* Empty state */
         .empty-state {
             text-align: center; padding: 30px; color: #999; font-size: 14px;
         }
         .empty-state i { font-size: 36px; margin-bottom: 10px; color: #ddd; display: block; }
 
-        /* Responsive */
+        /* Scraper Status Card */
+        .scraper-status-card {
+            background: linear-gradient(135deg, #0b2c6b, #143d8d);
+            border-radius: 10px; padding: 22px; color: #fff;
+            margin-bottom: 25px; display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+        .scraper-info h3 { font-size: 16px; margin-bottom: 6px; }
+        .scraper-info p { font-size: 12px; opacity: 0.8; }
+        .scraper-stats { display: flex; gap: 20px; flex-wrap: wrap; }
+        .scraper-stat { text-align: center; }
+        .scraper-stat .num { font-size: 22px; font-weight: 700; color: #f4b400; }
+        .scraper-stat .label { font-size: 11px; opacity: 0.7; }
+        .scraper-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .scraper-actions form { display: inline; }
+        .scraper-actions .btn { padding: 10px 18px; font-size: 13px; border-radius: 6px; }
+
         @media (max-width: 768px) {
             .sidebar { width: 0; overflow: hidden; }
             .main { margin-left: 0; padding: 15px; }
@@ -191,11 +196,13 @@
         </div>
         <div class="sidebar-nav">
             <a href="#dashboard" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="#scraper"><i class="fas fa-sync-alt"></i> Auto-Scraper</a>
             <a href="#notices"><i class="fas fa-bullhorn"></i> Notices</a>
             <a href="#uploads"><i class="fas fa-file-pdf"></i> Uploads</a>
+            <a href="#hptu-notices"><i class="fas fa-globe"></i> HPTU Live Data</a>
+            <a href="#scanned-pdfs"><i class="fas fa-file-lines"></i> Scanned PDFs</a>
             <a href="#chatlogs"><i class="fas fa-comments"></i> Chat Logs</a>
-            <a href="#hptu-notices"><i class="fas fa-globe"></i> HPTU Live Notices</a>
-            <a href="{{ url_for('main.home') }}"><i class="fas fa-globe"></i> View Website</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-eye"></i> View Website</a>
         </div>
         <div class="sidebar-footer">
             <a href="{{ url_for('admin.logout') }}"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
@@ -228,10 +235,31 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon gold"><i class="fas fa-file-pdf"></i></div>
+                <div class="stat-icon gold"><i class="fas fa-globe"></i></div>
                 <div class="stat-info">
-                    <h3>{{ stats.total_uploads }}</h3>
-                    <p>Uploaded PDFs</p>
+                    <h3>{{ stats.hptu_notices }}</h3>
+                    <p>HPTU Live Notices</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-file-pdf"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.pdfs_scanned }}</h3>
+                    <p>PDFs Scanned</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-book"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.syllabus_count }}</h3>
+                    <p>Syllabus Items</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="fas fa-rupee-sign"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.fees_count }}</h3>
+                    <p>Fee Records</p>
                 </div>
             </div>
             <div class="stat-card">
@@ -250,12 +278,47 @@
                     <p>AI Service</p>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon blue"><i class="fas fa-globe"></i></div>
-                <div class="stat-info">
-                    <h3>{{ stats.hptu_notices }}</h3>
-                    <p>HPTU Live Notices</p>
+        </div>
+
+        <!-- SCRAPER STATUS & CONTROLS -->
+        <div class="scraper-status-card" id="scraper">
+            <div class="scraper-info">
+                <h3><i class="fas fa-sync-alt"></i> Auto-Scraper Status</h3>
+                <p>Status: <strong>{{ scraper_status.status|default('never_run') }}</strong> |
+                   Last Run: <strong>{{ scraper_status.last_run|default('Never') }}</strong></p>
+                {% if scraper_status.error %}
+                <p style="color:#ff6b6b;">Error: {{ scraper_status.error }}</p>
+                {% endif %}
+            </div>
+            <div class="scraper-stats">
+                <div class="scraper-stat">
+                    <div class="num">{{ scraper_status.notices_count|default(0) }}</div>
+                    <div class="label">Notices</div>
                 </div>
+                <div class="scraper-stat">
+                    <div class="num">{{ scraper_status.pdfs_scanned|default(0) }}</div>
+                    <div class="label">PDFs</div>
+                </div>
+                <div class="scraper-stat">
+                    <div class="num">{{ scraper_status.syllabus_count|default(0) }}</div>
+                    <div class="label">Syllabus</div>
+                </div>
+                <div class="scraper-stat">
+                    <div class="num">{{ scraper_status.fees_count|default(0) }}</div>
+                    <div class="label">Fees</div>
+                </div>
+            </div>
+            <div class="scraper-actions">
+                <form method="POST" action="{{ url_for('admin.fetch_hptu_notices') }}">
+                    <button type="submit" class="btn" style="background:#f4b400; color:#0b2c6b; font-weight:600;">
+                        <i class="fas fa-download"></i> Quick Fetch
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.trigger_full_scrape') }}">
+                    <button type="submit" class="btn" style="background:#27ae60; color:#fff; font-weight:600;">
+                        <i class="fas fa-sync-alt"></i> Full Scrape (Notices + PDFs + Syllabus + Fees)
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -266,7 +329,6 @@
                 <span class="badge badge-blue">{{ stats.total_notices }} total</span>
             </div>
             <div class="panel-body">
-                <!-- Add Notice Form -->
                 <form method="POST" action="{{ url_for('admin.add_notice') }}" class="add-form" style="margin-bottom:20px;">
                     <div class="field">
                         <label>Title *</label>
@@ -288,12 +350,7 @@
                 {% if notices %}
                 <table>
                     <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Date</th>
-                            <th>Description</th>
-                            <th>Action</th>
-                        </tr>
+                        <tr><th>Title</th><th>Date</th><th>Description</th><th>Action</th></tr>
                     </thead>
                     <tbody>
                         {% for id, notice in notices.items() %}
@@ -316,8 +373,7 @@
                 </table>
                 {% else %}
                 <div class="empty-state">
-                    <i class="fas fa-bullhorn"></i>
-                    No notices yet. Add one above!
+                    <i class="fas fa-bullhorn"></i> No notices yet. Add one above!
                 </div>
                 {% endif %}
             </div>
@@ -330,7 +386,6 @@
                 <span class="badge badge-blue">{{ stats.total_uploads }} files</span>
             </div>
             <div class="panel-body">
-                <!-- Admin PDF Upload -->
                 <form method="POST" action="{{ url_for('admin.upload_pdf') }}" enctype="multipart/form-data" class="add-form" style="margin-bottom:20px;">
                     <div class="field" style="min-width:300px;">
                         <label>Upload a PDF</label>
@@ -345,12 +400,7 @@
                 {% if uploaded_files %}
                 <table>
                     <thead>
-                        <tr>
-                            <th>Filename</th>
-                            <th>Size</th>
-                            <th>Upload Date</th>
-                            <th>Action</th>
-                        </tr>
+                        <tr><th>Filename</th><th>Size</th><th>Upload Date</th><th>Action</th></tr>
                     </thead>
                     <tbody>
                         {% for f in uploaded_files %}
@@ -370,27 +420,21 @@
                 </table>
                 {% else %}
                 <div class="empty-state">
-                    <i class="fas fa-file-pdf"></i>
-                    No PDF files uploaded yet.
+                    <i class="fas fa-file-pdf"></i> No PDF files uploaded yet.
                 </div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- HPTU LIVE NOTICES -->
+        <!-- HPTU LIVE DATA -->
         <div class="panel" id="hptu-notices">
             <div class="panel-header">
-                <h2><i class="fas fa-globe"></i> HPTU Official Notices</h2>
-                <div style="display:flex; align-items:center; gap:10px;">
+                <h2><i class="fas fa-globe"></i> HPTU Live Notifications</h2>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <span class="badge badge-blue">{{ hptu_notices|length }} fetched</span>
-                    <form method="POST" action="{{ url_for('admin.fetch_hptu_notices') }}" style="display:inline;">
-                        <button type="submit" class="btn btn-primary" id="fetch-hptu-btn">
-                            <i class="fas fa-download"></i> Fetch from HPTU
-                        </button>
-                    </form>
                     {% if hptu_notices %}
                     <form method="POST" action="{{ url_for('admin.clear_hptu_notices') }}" style="display:inline;"
-                          onsubmit="return confirm('Clear all fetched HPTU notices?');">
+                          onsubmit="return confirm('Clear all HPTU notices?');">
                         <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Clear</button>
                     </form>
                     {% endif %}
@@ -399,19 +443,16 @@
             <div class="panel-body">
                 <p style="font-size:12px; color:#888; margin-bottom:14px;">
                     <i class="fas fa-info-circle"></i>
-                    Notifications fetched live from <a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:600;">himtu.ac.in</a>.
-                    Click "Fetch from HPTU" to refresh.
+                    Auto-scraped from <a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:600;">himtu.ac.in</a>.
+                    PDFs are auto-scanned and fed into the AI chatbot.
                 </p>
                 {% if hptu_notices %}
                 <div style="max-height:500px; overflow-y:auto;">
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:5%;">#</th>
-                            <th style="width:50%;">Title</th>
-                            <th style="width:18%;">Publish Date</th>
-                            <th style="width:15%;">Last Date</th>
-                            <th style="width:12%;">Document</th>
+                            <th>#</th><th>Title</th><th>Category</th>
+                            <th>Date</th><th>PDF Scanned</th><th>Doc</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -419,10 +460,15 @@
                         <tr>
                             <td>{{ loop.index }}</td>
                             <td><strong>{{ notice.title }}</strong></td>
-                            <td><span class="badge badge-blue">{{ notice.date }}</span></td>
                             <td>
-                                {% if notice.last_date %}
-                                <span class="badge badge-red">{{ notice.last_date }}</span>
+                                <span class="badge badge-{% if notice.category == 'examination' %}red{% elif notice.category == 'admission' %}green{% elif notice.category == 'fees' %}gold{% elif notice.category == 'syllabus' %}purple{% else %}blue{% endif %}">
+                                    {{ notice.category|default('general') }}
+                                </span>
+                            </td>
+                            <td>{{ notice.date }}</td>
+                            <td>
+                                {% if notice.pdf_text %}
+                                <span class="badge badge-green"><i class="fas fa-check"></i> Yes</span>
                                 {% else %}
                                 <span style="color:#ccc;">—</span>
                                 {% endif %}
@@ -445,7 +491,52 @@
                 {% else %}
                 <div class="empty-state">
                     <i class="fas fa-globe"></i>
-                    No HPTU notices fetched yet. Click "Fetch from HPTU" to download the latest notifications.
+                    No HPTU notices yet. Click "Full Scrape" above to fetch live data.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SCANNED PDFs -->
+        <div class="panel" id="scanned-pdfs">
+            <div class="panel-header">
+                <h2><i class="fas fa-file-lines"></i> Auto-Scanned PDFs</h2>
+                <span class="badge badge-purple">{{ scraped_pdfs|length }} scanned</span>
+            </div>
+            <div class="panel-body">
+                <p style="font-size:12px; color:#888; margin-bottom:14px;">
+                    <i class="fas fa-robot"></i>
+                    These PDFs were automatically downloaded, text-extracted, and fed into the AI chatbot knowledge base.
+                </p>
+                {% if scraped_pdfs %}
+                <div style="max-height:400px; overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr><th>#</th><th>Document</th><th>Category</th><th>Text Preview</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for pdf in scraped_pdfs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <strong>{{ pdf.title|default('Document') }}</strong>
+                                {% if pdf.url %}
+                                <br><a href="{{ pdf.url }}" target="_blank" rel="noopener" style="font-size:11px; color:#0b2c6b;">View original</a>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge badge-purple">{{ pdf.category|default('general') }}</span></td>
+                            <td style="max-width:300px; font-size:11px; color:#666;">
+                                {{ pdf.text[:150]|default('No text extracted') }}{% if pdf.text and pdf.text|length > 150 %}...{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-file-lines"></i>
+                    No PDFs scanned yet. Run "Full Scrape" to auto-scan PDF documents from HPTU.
                 </div>
                 {% endif %}
             </div>
@@ -454,9 +545,9 @@
         <!-- CHAT LOGS -->
         <div class="panel" id="chatlogs">
             <div class="panel-header">
-                <h2><i class="fas fa-comments"></i> Recent Chat Logs</h2>
+                <h2><i class="fas fa-comments"></i> Chat Logs (MongoDB)</h2>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="badge badge-green">Last {{ chat_logs|length }} conversations</span>
+                    <span class="badge badge-green">{{ chat_logs|length }} conversations</span>
                     {% if chat_logs %}
                     <form method="POST" action="{{ url_for('admin.clear_chats') }}" style="display:inline;"
                           onsubmit="return confirm('Clear all chat logs?');">
@@ -479,7 +570,7 @@
                 {% else %}
                 <div class="empty-state">
                     <i class="fas fa-comments"></i>
-                    No chat conversations yet. Logs will appear here after users interact with the chatbot.
+                    No chat conversations yet. Logs are stored in MongoDB.
                 </div>
                 {% endif %}
             </div>
@@ -518,7 +609,6 @@
     </div>
 
     <script>
-        // Smooth scroll for sidebar links
         document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(function(link) {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -529,7 +619,6 @@
             });
         });
 
-        // Edit notice modal
         function editNotice(id, title, date, desc) {
             document.getElementById('edit-title').value = title;
             document.getElementById('edit-date').value = date;
@@ -542,7 +631,6 @@
             document.getElementById('edit-modal').style.display = 'none';
         }
 
-        // Close modal on outside click
         document.getElementById('edit-modal').addEventListener('click', function(e) {
             if (e.target === this) closeEditModal();
         });

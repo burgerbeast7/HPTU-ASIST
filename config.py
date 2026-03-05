@@ -22,6 +22,10 @@ class Config:
     # AI Service
     COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 
+    # MongoDB
+    MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
+    MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "hptu_assistant")
+
     # Admin credentials (hashed)
     ADMIN_USERNAME = "admin"
     ADMIN_PASSWORD_HASH = generate_password_hash("kunal123")
@@ -29,6 +33,10 @@ class Config:
     # Brute-force protection
     MAX_LOGIN_ATTEMPTS = 5
     LOCKOUT_TIME = 300  # 5 minutes in seconds
+
+    # Auto-scraper settings
+    SCRAPER_INTERVAL_MINUTES = int(os.getenv("SCRAPER_INTERVAL_MINUTES", "30"))
+    AUTO_SCRAPE_ENABLED = os.getenv("AUTO_SCRAPE_ENABLED", "true").lower() == "true"
 
     # Production detection
     IS_PRODUCTION = os.getenv("RENDER", "") != ""

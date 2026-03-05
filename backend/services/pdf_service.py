@@ -8,10 +8,7 @@ _pdf_text_storage = ""
 
 
 def extract_pdf_text(file_path):
-    """
-    Extract text from a PDF file and store it in memory.
-    Returns the extracted text, or None if no text could be extracted.
-    """
+    """Extract text from a PDF file and store it in memory."""
     global _pdf_text_storage
 
     reader = PdfReader(file_path)

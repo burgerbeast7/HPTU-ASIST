@@ -1,8 +1,11 @@
 """
-API Routes — JSON endpoints for notices data
+API Routes — JSON endpoints for notices, syllabus, fees, scraper status
 """
 from flask import Blueprint, jsonify
-from backend.services.notice_service import load_notices, load_hptu_notices
+from backend.services.notice_service import (
+    load_notices, load_hptu_notices, load_syllabus,
+    load_fees, load_scraped_pdfs, load_scraper_status
+)
 
 api_bp = Blueprint("api", __name__)
 
@@ -15,5 +18,39 @@ def get_notices():
 
 @api_bp.route("/hptu-notices")
 def get_hptu_notices():
-    """Return cached HPTU official notices as JSON."""
+    """Return HPTU official notices as JSON."""
     return jsonify(load_hptu_notices())
+
+
+@api_bp.route("/syllabus")
+def get_syllabus():
+    """Return syllabus data as JSON."""
+    return jsonify(load_syllabus())
+
+
+@api_bp.route("/fees")
+def get_fees():
+    """Return fees data as JSON."""
+    return jsonify(load_fees())
+
+
+@api_bp.route("/scraper-status")
+def get_scraper_status():
+    """Return current scraper status."""
+    return jsonify(load_scraper_status())
+
+
+@api_bp.route("/scraped-pdfs")
+def get_scraped_pdfs():
+    """Return list of scraped PDFs (without full text, for UI)."""
+    pdfs = load_scraped_pdfs()
+    # Return summary only, not full text
+    summary = []
+    for p in pdfs:
+        summary.append({
+            "title": p.get("title", ""),
+            "url": p.get("url", ""),
+            "category": p.get("category", ""),
+            "text_preview": p.get("text", "")[:200] + "..." if p.get("text") else "",
+        })
+    return jsonify(summary)
