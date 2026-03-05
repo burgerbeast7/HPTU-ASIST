@@ -8,13 +8,24 @@ from datetime import datetime, timedelta
 from functools import wraps
 from pypdf import PdfReader
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 load_dotenv()
 
 app = Flask(__name__)
+# Fix for running behind Render / any reverse proxy (HTTPS)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 app.config["UPLOAD_FOLDER"] = "uploads"
 app.secret_key = os.getenv("SECRET_KEY", "hptu-ai-secret-key-2026-secure")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(hours=2)
+
+# Session cookie configuration — works on both HTTP (local) and HTTPS (Render)
+IS_PRODUCTION = os.getenv("RENDER", "") != ""
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+if IS_PRODUCTION:
+    app.config["SESSION_COOKIE_SECURE"] = True
 
 # Admin credentials — secured with password hashing
 ADMIN_USERNAME = "admin"
@@ -368,12 +379,14 @@ def admin_clear_chats():
 # Block anyone trying to access /admin paths without proper auth
 @app.before_request
 def protect_admin_routes():
-    if request.path.startswith("/admin") and request.endpoint != "admin_login":
+    if request.path.startswith("/admin"):
+        # Allow access to login and logout without auth
+        if request.endpoint in ("admin_login", "admin_logout", "static"):
+            return None
         if not session.get("admin_logged_in"):
-            if request.endpoint and request.endpoint != "static":
-                return redirect(url_for("admin_login"))
+            return redirect(url_for("admin_login"))
 
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=not IS_PRODUCTION)

@@ -294,7 +294,7 @@
                             <td><span class="badge badge-blue">{{ notice.date }}</span></td>
                             <td>{{ notice.description }}</td>
                             <td style="white-space:nowrap;">
-                                <button class="btn btn-primary" onclick="editNotice('{{ id }}', '{{ notice.title }}', '{{ notice.date }}', '{{ notice.description }}')" title="Edit">
+                                <button class="btn btn-primary" onclick='editNotice({{ id|tojson }}, {{ notice.title|tojson }}, {{ notice.date|tojson }}, {{ notice.description|tojson }})' title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
                                 <form method="POST" action="{{ url_for('admin_delete_notice', notice_id=id) }}" style="display:inline;"
