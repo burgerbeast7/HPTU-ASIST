@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard — HPTU AI Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: "Segoe UI", Arial, sans-serif; background: #f0f2f7; color: #222; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 240px; height: 100vh;
+            background: linear-gradient(180deg, #071e4a 0%, #0b2c6b 100%);
+            color: #fff; padding-top: 0; z-index: 100;
+            overflow-y: auto;
+        }
+        .sidebar-brand {
+            padding: 22px 18px; border-bottom: 3px solid #f4b400;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .sidebar-brand .icon {
+            width: 40px; height: 40px; background: rgba(244,180,0,0.2);
+            border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; color: #f4b400; font-size: 18px;
+        }
+        .sidebar-brand h3 { font-size: 15px; line-height: 1.3; }
+        .sidebar-brand span { font-size: 11px; color: #8899b5; }
+        .sidebar-nav { padding: 15px 0; }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 20px; color: #ccd5e4; text-decoration: none;
+            font-size: 13.5px; transition: all 0.2s; border-left: 3px solid transparent;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background: rgba(255,255,255,0.08); color: #f4b400;
+            border-left: 3px solid #f4b400;
+        }
+        .sidebar-nav a i { width: 18px; text-align: center; }
+        .sidebar-footer {
+            position: absolute; bottom: 0; width: 100%;
+            padding: 15px 20px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-footer a {
+            color: #8899b5; text-decoration: none; font-size: 13px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .sidebar-footer a:hover { color: #f4b400; }
+
+        /* Main Content */
+        .main { margin-left: 240px; padding: 25px 30px; min-height: 100vh; }
+
+        /* Top Bar */
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 28px; flex-wrap: wrap; gap: 10px;
+        }
+        .topbar h1 { font-size: 24px; color: #0b2c6b; }
+        .topbar-right { display: flex; align-items: center; gap: 12px; }
+        .topbar-right a {
+            background: #0b2c6b; color: #fff; padding: 8px 16px;
+            border-radius: 6px; text-decoration: none; font-size: 13px;
+            font-weight: 500; display: flex; align-items: center; gap: 6px;
+        }
+        .topbar-right a:hover { background: #143d8d; }
+        .topbar-right a.outline {
+            background: transparent; border: 1.5px solid #0b2c6b; color: #0b2c6b;
+        }
+        .topbar-right a.outline:hover { background: #0b2c6b; color: #fff; }
+
+        /* Stat Cards */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px; margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #fff; border-radius: 10px; padding: 22px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 15px;
+        }
+        .stat-icon {
+            width: 50px; height: 50px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+        }
+        .stat-icon.blue { background: #e8eef8; color: #0b2c6b; }
+        .stat-icon.gold { background: #fff5d4; color: #d4a200; }
+        .stat-icon.green { background: #e6f7ef; color: #27ae60; }
+        .stat-icon.red { background: #fdecea; color: #c0392b; }
+        .stat-info h3 { font-size: 24px; color: #222; }
+        .stat-info p { font-size: 12px; color: #888; margin-top: 2px; }
+
+        /* Panels */
+        .panel {
+            background: #fff; border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px; overflow: hidden;
+        }
+        .panel-header {
+            padding: 16px 20px; border-bottom: 1px solid #eef1f5;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-header h2 { font-size: 16px; color: #0b2c6b; display: flex; align-items: center; gap: 8px; }
+        .panel-body { padding: 20px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        table th {
+            background: #f8f9fc; padding: 10px 14px;
+            text-align: left; font-size: 12px; color: #666;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            border-bottom: 2px solid #eef1f5;
+        }
+        table td {
+            padding: 12px 14px; font-size: 13px; color: #333;
+            border-bottom: 1px solid #f5f5f5; vertical-align: middle;
+        }
+        table tr:hover { background: #fafbfd; }
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: 600;
+        }
+        .badge-blue { background: #e8eef8; color: #0b2c6b; }
+        .badge-green { background: #e6f7ef; color: #27ae60; }
+        .badge-red { background: #fdecea; color: #c0392b; }
+
+        /* Buttons */
+        .btn {
+            padding: 6px 14px; border: none; border-radius: 5px;
+            font-size: 12px; cursor: pointer; font-weight: 500;
+            display: inline-flex; align-items: center; gap: 4px;
+        }
+        .btn-danger { background: #fdecea; color: #c0392b; }
+        .btn-danger:hover { background: #f5c6cb; }
+        .btn-primary { background: #0b2c6b; color: #fff; }
+        .btn-primary:hover { background: #143d8d; }
+
+        /* Add Notice Form */
+        .add-form { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+        .add-form .field { flex: 1; min-width: 160px; }
+        .add-form label { display: block; font-size: 12px; color: #666; margin-bottom: 4px; font-weight: 500; }
+        .add-form input, .add-form textarea {
+            width: 100%; padding: 9px 12px; border: 1.5px solid #dde1ea;
+            border-radius: 6px; font-size: 13px; outline: none; font-family: inherit;
+        }
+        .add-form input:focus, .add-form textarea:focus { border-color: #0b2c6b; }
+        .add-form .field-desc { min-width: 250px; }
+
+        /* Chat Log */
+        .chat-log-item {
+            padding: 12px 0; border-bottom: 1px solid #f5f5f5;
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        .chat-log-item:last-child { border-bottom: none; }
+        .chat-time {
+            font-size: 11px; color: #999; min-width: 100px; padding-top: 2px;
+        }
+        .chat-messages { flex: 1; }
+        .chat-user {
+            font-size: 13px; color: #0b2c6b; font-weight: 600; margin-bottom: 4px;
+        }
+        .chat-bot { font-size: 12.5px; color: #555; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 30px; color: #999; font-size: 14px;
+        }
+        .empty-state i { font-size: 36px; margin-bottom: 10px; color: #ddd; display: block; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 0; overflow: hidden; }
+            .main { margin-left: 0; padding: 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .add-form { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="icon"><i class="fas fa-university"></i></div>
+            <div>
+                <h3>HPTU Admin</h3>
+                <span>AI Assistant Panel</span>
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <a href="#dashboard" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="#notices"><i class="fas fa-bullhorn"></i> Notices</a>
+            <a href="#uploads"><i class="fas fa-file-pdf"></i> Uploads</a>
+            <a href="#chatlogs"><i class="fas fa-comments"></i> Chat Logs</a>
+            <a href="{{ url_for('home') }}"><i class="fas fa-globe"></i> View Website</a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('admin_logout') }}"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+
+        <!-- TOP BAR -->
+        <div class="topbar">
+            <h1 id="dashboard"><i class="fas fa-chart-pie" style="color:#f4b400;"></i> Dashboard</h1>
+            <div class="topbar-right">
+                <a href="{{ url_for('home') }}" class="outline" target="_blank" rel="noopener">
+                    <i class="fas fa-external-link-alt"></i> View Site
+                </a>
+                <a href="{{ url_for('admin_logout') }}">
+                    <i class="fas fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-bullhorn"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_notices }}</h3>
+                    <p>Active Notices</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon gold"><i class="fas fa-file-pdf"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_uploads }}</h3>
+                    <p>Uploaded PDFs</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-comments"></i></div>
+                <div class="stat-info">
+                    <h3>{{ stats.total_chats }}</h3>
+                    <p>Chat Messages</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon {% if stats.ai_status == 'Connected' %}green{% else %}red{% endif %}">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 style="font-size:16px;">{{ stats.ai_status }}</h3>
+                    <p>AI Service</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTICES MANAGEMENT -->
+        <div class="panel" id="notices">
+            <div class="panel-header">
+                <h2><i class="fas fa-bullhorn"></i> Manage Notices</h2>
+                <span class="badge badge-blue">{{ stats.total_notices }} total</span>
+            </div>
+            <div class="panel-body">
+                <!-- Add Notice Form -->
+                <form method="POST" action="{{ url_for('admin_add_notice') }}" class="add-form" style="margin-bottom:20px;">
+                    <div class="field">
+                        <label>Title *</label>
+                        <input type="text" name="title" placeholder="Notice title" required>
+                    </div>
+                    <div class="field">
+                        <label>Date</label>
+                        <input type="text" name="date" placeholder="e.g. March 2026">
+                    </div>
+                    <div class="field field-desc">
+                        <label>Description</label>
+                        <input type="text" name="description" placeholder="Short description">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="height:38px;">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </form>
+
+                {% if notices %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for id, notice in notices.items() %}
+                        <tr>
+                            <td><strong>{{ notice.title }}</strong></td>
+                            <td><span class="badge badge-blue">{{ notice.date }}</span></td>
+                            <td>{{ notice.description }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_delete_notice', notice_id=id) }}" style="display:inline;"
+                                      onsubmit="return confirm('Delete this notice?');">
+                                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bullhorn"></i>
+                    No notices yet. Add one above!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- UPLOADED FILES -->
+        <div class="panel" id="uploads">
+            <div class="panel-header">
+                <h2><i class="fas fa-file-pdf"></i> Uploaded PDFs</h2>
+                <span class="badge badge-blue">{{ stats.total_uploads }} files</span>
+            </div>
+            <div class="panel-body">
+                {% if uploaded_files %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Size</th>
+                            <th>Upload Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in uploaded_files %}
+                        <tr>
+                            <td><i class="fas fa-file-pdf" style="color:#c0392b;"></i> {{ f.name }}</td>
+                            <td>{{ f.size }} KB</td>
+                            <td>{{ f.date }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin_delete_upload', filename=f.name) }}" style="display:inline;"
+                                      onsubmit="return confirm('Delete this file?');">
+                                    <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-file-pdf"></i>
+                    No PDF files uploaded yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- CHAT LOGS -->
+        <div class="panel" id="chatlogs">
+            <div class="panel-header">
+                <h2><i class="fas fa-comments"></i> Recent Chat Logs</h2>
+                <span class="badge badge-green">Last {{ chat_logs|length }} conversations</span>
+            </div>
+            <div class="panel-body">
+                {% if chat_logs %}
+                    {% for log in chat_logs|reverse %}
+                    <div class="chat-log-item">
+                        <div class="chat-time">{{ log.time }}</div>
+                        <div class="chat-messages">
+                            <div class="chat-user"><i class="fas fa-user"></i> {{ log.user }}</div>
+                            <div class="chat-bot"><i class="fas fa-robot"></i> {{ log.bot }}{% if log.bot|length >= 150 %}...{% endif %}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-comments"></i>
+                    No chat conversations yet. Logs will appear here after users interact with the chatbot.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Smooth scroll for sidebar links
+        document.querySelectorAll('.sidebar-nav a[href^="#"]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Active state
+                document.querySelectorAll('.sidebar-nav a').forEach(function(a) { a.classList.remove('active'); });
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HPTU AI Assistant — Himachal Pradesh Technical University</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Powered Smart Helpdesk for Himachal Pradesh Technical University, Hamirpur">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <span><i class="fas fa-phone-alt"></i> 01972-223504</span>
+            <span><i class="fas fa-envelope"></i> info@himtu.ac.in</span>
+            <span><i class="fas fa-map-marker-alt"></i> Hamirpur, HP - 177001</span>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>Himachal Pradesh Technical University</h1>
+                    <p>हिमाचल प्रदेश तकनीकी विश्वविद्यालय</p>
+                    <span class="tagline">AI-Powered Smart Helpdesk System</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="https://www.himtu.ac.in" target="_blank" rel="noopener" class="visit-btn">
+                    <i class="fas fa-external-link-alt"></i> Official Website
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav>
+        <div class="nav-content">
+            <a href="#about"><i class="fas fa-info-circle"></i> About</a>
+            <a href="#programs"><i class="fas fa-graduation-cap"></i> Programs</a>
+            <a href="#admissions"><i class="fas fa-user-plus"></i> Admissions</a>
+            <a href="#examinations"><i class="fas fa-file-alt"></i> Examinations</a>
+            <a href="#notices"><i class="fas fa-bullhorn"></i> Notices</a>
+            <a href="#contact"><i class="fas fa-phone"></i> Contact</a>
+        </div>
+        <button class="nav-toggle" id="nav-toggle" title="Toggle navigation"><i class="fas fa-bars"></i></button>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <div class="hero-overlay">
+            <div class="hero-text">
+                <h2>Welcome to HPTU AI Assistant</h2>
+                <p>Your intelligent companion for all university-related queries — admissions, exams, results & more</p>
+                <button class="hero-cta" id="open-chat-hero">
+                    <i class="fas fa-robot"></i> Start Chatting with AI
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK INFO CARDS -->
+    <section class="info-cards" id="about">
+        <div class="section-title">
+            <h2>Quick Information</h2>
+            <div class="title-line"></div>
+        </div>
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-university"></i></div>
+                <h3>About HPTU</h3>
+                <p>Established in 2010, HPTU is the premier technical university of Himachal Pradesh, affiliating engineering, pharmacy and management colleges across the state.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
+                <h3>Programs Offered</h3>
+                <p>B.Tech, M.Tech, BBA, MBA, BCA, MCA, B.Pharmacy, M.Pharmacy, Diploma and various other technical programs.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-clipboard-check"></i></div>
+                <h3>Examinations</h3>
+                <p>University conducts end-semester exams for all affiliated colleges. Results and date sheets available on the official website.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-user-graduate"></i></div>
+                <h3>Admissions</h3>
+                <p>Admissions through HPCET, JEE Main, GATE, MAT/CMAT. Lateral entry available for diploma holders into B.Tech programs.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROGRAMS SECTION -->
+    <section class="programs-section" id="programs">
+        <div class="section-title">
+            <h2>Academic Programs</h2>
+            <div class="title-line"></div>
+        </div>
+        <div class="programs-grid">
+            <div class="program-item">
+                <i class="fas fa-laptop-code"></i>
+                <h4>B.Tech / M.Tech</h4>
+                <p>CSE, ECE, EE, ME, CE, IT</p>
+            </div>
+            <div class="program-item">
+                <i class="fas fa-pills"></i>
+                <h4>B.Pharmacy / M.Pharmacy</h4>
+                <p>Pharmaceutical Sciences</p>
+            </div>
+            <div class="program-item">
+                <i class="fas fa-chart-line"></i>
+                <h4>BBA / MBA</h4>
+                <p>Business Administration</p>
+            </div>
+            <div class="program-item">
+                <i class="fas fa-desktop"></i>
+                <h4>BCA / MCA</h4>
+                <p>Computer Applications</p>
+            </div>
+            <div class="program-item">
+                <i class="fas fa-tools"></i>
+                <h4>Diploma Programs</h4>
+                <p>Various Engineering Disciplines</p>
+            </div>
+            <div class="program-item">
+                <i class="fas fa-flask"></i>
+                <h4>Research (Ph.D)</h4>
+                <p>Doctoral Programs</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- NOTICES SECTION -->
+    <section class="notices-section" id="notices">
+        <div class="section-title">
+            <h2>Latest Notices</h2>
+            <div class="title-line"></div>
+        </div>
+        <div class="notices-list" id="notices-list">
+            <div class="notice-item">
+                <div class="notice-icon"><i class="fas fa-bell"></i></div>
+                <div class="notice-content">
+                    <strong>Loading notices...</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section class="contact-section" id="contact">
+        <div class="section-title light">
+            <h2>Contact Us</h2>
+            <div class="title-line gold"></div>
+        </div>
+        <div class="contact-grid">
+            <div class="contact-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h4>Address</h4>
+                <p>Gandhi Chowk, Hamirpur,<br>Himachal Pradesh — 177001</p>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-phone-alt"></i>
+                <h4>Phone</h4>
+                <p>01972-223504</p>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <h4>Email</h4>
+                <p>info@himtu.ac.in</p>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-globe"></i>
+                <h4>Website</h4>
+                <p><a href="https://www.himtu.ac.in" target="_blank" rel="noopener">www.himtu.ac.in</a></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col">
+                <h4>HPTU AI Assistant</h4>
+                <p>An AI-powered smart helpdesk system for Himachal Pradesh Technical University, designed to assist students, faculty and visitors.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="https://www.himtu.ac.in" target="_blank" rel="noopener">Official Website</a></li>
+                    <li><a href="#about">About HPTU</a></li>
+                    <li><a href="#programs">Programs</a></li>
+                    <li><a href="#notices">Notices</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Student Resources</h4>
+                <ul>
+                    <li><a href="#examinations">Exam Info</a></li>
+                    <li><a href="#admissions">Admissions</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 HPTU AI Assistant — Capstone Project. Not an official HPTU website.</p>
+        </div>
+    </footer>
+
+    <!-- CHATBOT -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header">
+            <div class="chat-header-left">
+                <div class="chat-avatar"><i class="fas fa-robot"></i></div>
+                <div>
+                    <strong>HPTU AI Assistant</strong>
+                    <span class="chat-status" id="chat-status">● Online</span>
+                </div>
+            </div>
+            <div class="chat-header-actions">
+                <button id="clear-pdf-btn" title="Clear PDF context" class="hidden">
+                    <i class="fas fa-file-circle-xmark"></i>
+                </button>
+                <button id="close-chat" title="Close chat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-body" id="chat-body">
+            <div class="bot-message">
+                <div class="msg-avatar"><i class="fas fa-robot"></i></div>
+                <div class="msg-bubble">
+                    👋 Welcome to <strong>HPTU AI Assistant!</strong><br><br>
+                    I can help you with:<br>
+                    • Admissions & eligibility<br>
+                    • Exam schedules & results<br>
+                    • Programs & courses<br>
+                    • University contacts<br>
+                    • PDF document queries<br><br>
+                    Ask me anything about HPTU!
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT FOOTER -->
+        <div class="chat-footer">
+            <label for="pdfFile" class="upload-label" title="Upload a PDF to ask questions about it">
+                <i class="fas fa-paperclip"></i>
+            </label>
+            <input type="file" id="pdfFile" accept="application/pdf" class="hidden" title="Choose a PDF file to upload">
+            <input type="text" id="user-input" placeholder="Type your question here..." autocomplete="off">
+            <button id="send-message" title="Send message">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+
+        <div class="pdf-indicator hidden" id="pdf-indicator">
+            <i class="fas fa-file-pdf"></i>
+            <span id="pdf-name">document.pdf</span>
+            <button id="remove-pdf" title="Remove PDF"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- FLOAT BUTTON -->
+    <button class="chat-toggle" id="toggle-chat" title="Chat with HPTU AI">
+        <i class="fas fa-comments" id="chat-icon"></i>
+    </button>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

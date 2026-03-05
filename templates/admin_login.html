@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login — HPTU AI Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #071e4a 0%, #0b2c6b 40%, #143d8d 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 90%;
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #0b2c6b, #143d8d);
+            padding: 30px 25px;
+            text-align: center;
+            border-bottom: 4px solid #f4b400;
+        }
+        .login-header .icon {
+            width: 60px; height: 60px;
+            background: rgba(244,180,0,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 26px; color: #f4b400;
+            margin-bottom: 12px;
+            border: 2px solid rgba(244,180,0,0.4);
+        }
+        .login-header h2 { color: #fff; font-size: 20px; font-weight: 700; }
+        .login-header p { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 4px; }
+        .login-body { padding: 30px 25px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block; font-size: 13px; font-weight: 600;
+            color: #333; margin-bottom: 6px;
+        }
+        .form-group .input-wrap {
+            display: flex; align-items: center;
+            border: 2px solid #dde1ea; border-radius: 8px;
+            transition: border 0.3s; overflow: hidden;
+        }
+        .form-group .input-wrap:focus-within { border-color: #0b2c6b; }
+        .form-group .input-wrap i {
+            padding: 12px; color: #999; font-size: 14px;
+            background: #f8f9fc;
+        }
+        .form-group input {
+            flex: 1; padding: 12px 10px; border: none;
+            font-size: 14px; outline: none; background: transparent;
+        }
+        .error-msg {
+            background: #fdecea; color: #c0392b;
+            padding: 10px 14px; border-radius: 6px;
+            font-size: 13px; margin-bottom: 18px;
+            border-left: 4px solid #c0392b;
+        }
+        .login-btn {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, #0b2c6b, #143d8d);
+            color: #fff; border: none; border-radius: 8px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: opacity 0.3s;
+        }
+        .login-btn:hover { opacity: 0.9; }
+        .back-link {
+            display: block; text-align: center;
+            margin-top: 18px; font-size: 13px; color: #666;
+        }
+        .back-link a { color: #0b2c6b; text-decoration: none; font-weight: 500; }
+        .back-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="icon"><i class="fas fa-shield-halved"></i></div>
+            <h2>Admin Panel</h2>
+            <p>HPTU AI Assistant — Management Portal</p>
+        </div>
+        <div class="login-body">
+            {% if error %}
+            <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin_login') }}">
+                <div class="form-group">
+                    <label>Username</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user"></i>
+                        <input type="text" name="username" placeholder="Enter admin username" required autofocus>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" name="password" placeholder="Enter password" required>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-right-to-bracket"></i> Sign In
+                </button>
+            </form>
+            <div class="back-link">
+                <a href="{{ url_for('home') }}"><i class="fas fa-arrow-left"></i> Back to Website</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPTU AI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="logo-section">
+            <h2>Himachal Pradesh Technical University</h2>
+            <span>(AI Powered Smart Helpdesk System)</span>
+        </div>
+        <button class="result-btn">Results</button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="#">About Us</a>
+        <a href="#">Administration</a>
+        <a href="#">Examination</a>
+        <a href="#">Admissions</a>
+        <a href="#">Student Zone</a>
+        <a href="#">Contact Us</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="overlay-text">
+            When is the next UMC hearing?
+        </div>
+    </section>
+
+    <!-- Chatbot Toggle Button -->
+    <div class="chatbot-toggle" id="chatToggle">
+        💬
+    </div>
+
+    <!-- Chatbot Window -->
+    <div class="chatbot hidden" id="chatbot">
+        <div class="chat-header">
+            <div>
+                <strong>HPTU Nexus AI Assistant</strong>
+                <div class="status">● Online</div>
+            </div>
+            <span id="chatClose">✖</span>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+            <!-- Messages will be dynamically added here -->
+        </div>
+
+        <div class="quick-actions">
+            <button data-reply="results">Check Results</button>
+            <button data-reply="admissions">Admissions 2026</button>
+            <button data-reply="syllabus">HPTU Syllabus</button>
+            <button data-reply="notices">Latest Notices</button>
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Ask me anything...">
+            <button id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
