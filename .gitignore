@@ -10,6 +10,7 @@ build/
 venv/
 env/
 .venv/
+.venv-1/
 
 # Environment variables
 .env
@@ -26,3 +27,6 @@ uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Old files (removed after restructuring)
+app.py

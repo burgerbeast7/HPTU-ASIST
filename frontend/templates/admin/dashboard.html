@@ -195,10 +195,10 @@
             <a href="#uploads"><i class="fas fa-file-pdf"></i> Uploads</a>
             <a href="#chatlogs"><i class="fas fa-comments"></i> Chat Logs</a>
             <a href="#hptu-notices"><i class="fas fa-globe"></i> HPTU Live Notices</a>
-            <a href="{{ url_for('home') }}"><i class="fas fa-globe"></i> View Website</a>
+            <a href="{{ url_for('main.home') }}"><i class="fas fa-globe"></i> View Website</a>
         </div>
         <div class="sidebar-footer">
-            <a href="{{ url_for('admin_logout') }}"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
+            <a href="{{ url_for('admin.logout') }}"><i class="fas fa-right-from-bracket"></i> Sign Out</a>
         </div>
     </div>
 
@@ -209,10 +209,10 @@
         <div class="topbar">
             <h1 id="dashboard"><i class="fas fa-chart-pie" style="color:#f4b400;"></i> Dashboard</h1>
             <div class="topbar-right">
-                <a href="{{ url_for('home') }}" class="outline" target="_blank" rel="noopener">
+                <a href="{{ url_for('main.home') }}" class="outline" target="_blank" rel="noopener">
                     <i class="fas fa-external-link-alt"></i> View Site
                 </a>
-                <a href="{{ url_for('admin_logout') }}">
+                <a href="{{ url_for('admin.logout') }}">
                     <i class="fas fa-right-from-bracket"></i> Logout
                 </a>
             </div>
@@ -267,7 +267,7 @@
             </div>
             <div class="panel-body">
                 <!-- Add Notice Form -->
-                <form method="POST" action="{{ url_for('admin_add_notice') }}" class="add-form" style="margin-bottom:20px;">
+                <form method="POST" action="{{ url_for('admin.add_notice') }}" class="add-form" style="margin-bottom:20px;">
                     <div class="field">
                         <label>Title *</label>
                         <input type="text" name="title" placeholder="Notice title" required>
@@ -305,7 +305,7 @@
                                 <button class="btn btn-primary" onclick='editNotice({{ id|tojson }}, {{ notice.title|tojson }}, {{ notice.date|tojson }}, {{ notice.description|tojson }})' title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <form method="POST" action="{{ url_for('admin_delete_notice', notice_id=id) }}" style="display:inline;"
+                                <form method="POST" action="{{ url_for('admin.delete_notice', notice_id=id) }}" style="display:inline;"
                                       onsubmit="return confirm('Delete this notice?');">
                                     <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
                                 </form>
@@ -331,7 +331,7 @@
             </div>
             <div class="panel-body">
                 <!-- Admin PDF Upload -->
-                <form method="POST" action="{{ url_for('admin_upload_pdf') }}" enctype="multipart/form-data" class="add-form" style="margin-bottom:20px;">
+                <form method="POST" action="{{ url_for('admin.upload_pdf') }}" enctype="multipart/form-data" class="add-form" style="margin-bottom:20px;">
                     <div class="field" style="min-width:300px;">
                         <label>Upload a PDF</label>
                         <input type="file" name="pdf" accept="application/pdf" required
@@ -359,7 +359,7 @@
                             <td>{{ f.size }} KB</td>
                             <td>{{ f.date }}</td>
                             <td>
-                                <form method="POST" action="{{ url_for('admin_delete_upload', filename=f.name) }}" style="display:inline;"
+                                <form method="POST" action="{{ url_for('admin.delete_upload', filename=f.name) }}" style="display:inline;"
                                       onsubmit="return confirm('Delete this file?');">
                                     <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete</button>
                                 </form>
@@ -383,13 +383,13 @@
                 <h2><i class="fas fa-globe"></i> HPTU Official Notices</h2>
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="badge badge-blue">{{ hptu_notices|length }} fetched</span>
-                    <form method="POST" action="{{ url_for('admin_fetch_hptu_notices') }}" style="display:inline;">
+                    <form method="POST" action="{{ url_for('admin.fetch_hptu_notices') }}" style="display:inline;">
                         <button type="submit" class="btn btn-primary" id="fetch-hptu-btn">
                             <i class="fas fa-download"></i> Fetch from HPTU
                         </button>
                     </form>
                     {% if hptu_notices %}
-                    <form method="POST" action="{{ url_for('admin_clear_hptu_notices') }}" style="display:inline;"
+                    <form method="POST" action="{{ url_for('admin.clear_hptu_notices') }}" style="display:inline;"
                           onsubmit="return confirm('Clear all fetched HPTU notices?');">
                         <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Clear</button>
                     </form>
@@ -458,7 +458,7 @@
                 <div style="display:flex; align-items:center; gap:10px;">
                     <span class="badge badge-green">Last {{ chat_logs|length }} conversations</span>
                     {% if chat_logs %}
-                    <form method="POST" action="{{ url_for('admin_clear_chats') }}" style="display:inline;"
+                    <form method="POST" action="{{ url_for('admin.clear_chats') }}" style="display:inline;"
                           onsubmit="return confirm('Clear all chat logs?');">
                         <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Clear All</button>
                     </form>

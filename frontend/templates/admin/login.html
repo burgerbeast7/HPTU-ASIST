@@ -94,7 +94,7 @@
             {% if error %}
             <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
             {% endif %}
-            <form method="POST" action="{{ url_for('admin_login') }}">
+            <form method="POST" action="{{ url_for('admin.login') }}">
                 <div class="form-group">
                     <label>Username</label>
                     <div class="input-wrap">
@@ -114,7 +114,7 @@
                 </button>
             </form>
             <div class="back-link">
-                <a href="{{ url_for('home') }}"><i class="fas fa-arrow-left"></i> Back to Website</a>
+                <a href="{{ url_for('main.home') }}"><i class="fas fa-arrow-left"></i> Back to Website</a>
             </div>
         </div>
     </div>
