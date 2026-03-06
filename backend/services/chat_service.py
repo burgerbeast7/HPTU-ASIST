@@ -51,7 +51,15 @@ CONTACTS: Registrar: 01972-226902 | Exam: 01972-226912 | Email: registrarhimtu@g
 RESPONSE RULES:
 1. Reply naturally like a helpful AI — be concise, friendly, and to the point.
 2. When asked for documents/papers, provide DIRECT LINKS from the data below.
-3. For PYQ/question papers, give direct hptuonline.com links.
+3. For PYQ/question papers:
+   - If the user specifies course + branch + semester + subject, find and provide direct download links.
+   - If the user only says "PYQ" or "question papers" without details, ask them to specify:
+     a) Course (B.Tech, BBA, BCA, MBA, MCA, B.Pharmacy, M.Pharmacy, etc.)
+     b) Branch (for B.Tech: CSE/IT, Civil, ME, Electrical, etc.)
+     c) Semester (1-8)
+     d) Subject (optional)
+   - Always provide the direct hptuonline.com paper links when available.
+   - Format each paper with subject name, exam period, and clickable link.
 4. Keep answers short unless the user asks for detailed info.
 5. Use bullet points and emojis for readability.
 6. If you don't have specific data, give the relevant portal link.
@@ -159,21 +167,36 @@ def _build_smart_context(user_message):
         pyq_papers = _search_items(
             _context_cache.get("pyq", []),
             user_message,
-            fields=("title", "course", "branch"),
-            max_results=25
+            fields=("title", "course", "branch", "subject"),
+            max_results=30
         )
         if pyq_papers:
             pyq_text = "\n📝 MATCHING PYQ PAPERS (from hptuonline.com):\n"
             for p in pyq_papers:
-                pyq_text += f"  • {p.get('title', '')} [{p.get('course', '')}]"
-                if p.get('branch'):
-                    pyq_text += f" - {p['branch']}"
+                subject = p.get('subject', p.get('title', ''))
+                pyq_text += f"  • {subject}"
+                if p.get('course'):
+                    pyq_text += f" [{p['course']}"
+                    if p.get('branch'):
+                        pyq_text += f" - {p['branch']}"
+                    pyq_text += "]"
+                if p.get('semester'):
+                    pyq_text += f" | Sem {p['semester']}"
+                if p.get('exam_period'):
+                    pyq_text += f" | {p['exam_period']}"
                 if p.get('link'):
                     pyq_text += f"\n    🔗 {p['link']}"
                 pyq_text += "\n"
             context_parts.append(pyq_text)
         else:
-            context_parts.append("\n📝 PYQ: No exact match found. Direct user to https://www.hptuonline.com/\n")
+            # List available courses/branches to help user navigate
+            context_parts.append(
+                "\n📝 PYQ: No exact match found for the query. "
+                "Available courses: B.Tech (CSE/IT, Civil, ME, Electrical, Auto, Textile), "
+                "BBA, BCA, BHMCT, B.Pharmacy, MBA, MCA, M.Pharmacy, M.Sc, M.Tech, Ph.D, Yoga, HPTSB Diploma, HPTSB ITI.\n"
+                "Ask the user to specify: 1) Course 2) Branch (if B.Tech) 3) Semester 4) Subject (optional).\n"
+                "Direct link: https://www.hptuonline.com/\n"
+            )
 
     # ── Notices: Only top 10 recent ──
     if "notices" in topics:

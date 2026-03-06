@@ -64,11 +64,22 @@ def get_pyq():
 
 @api_bp.route("/pyq/search")
 def search_pyq_api():
-    """Search PYQ papers by keyword."""
+    """Search PYQ papers with optional filters: ?q=keyword&course=B.Tech&branch=CSE&semester=3"""
     from flask import request
-    query = request.args.get("q", "")
-    if not query:
-        return jsonify({"error": "Please provide a search query using ?q=keyword"}), 400
     from backend.services.pyq_service import search_pyq
-    results = search_pyq(query)
+    query = request.args.get("q", "")
+    course = request.args.get("course", "")
+    branch = request.args.get("branch", "")
+    semester = int(request.args.get("semester", 0) or 0)
+    results = search_pyq(query, course=course, branch=branch, semester=semester)
     return jsonify(results)
+
+
+@api_bp.route("/pyq/courses")
+def get_pyq_courses():
+    """Return available PYQ courses and branches."""
+    from backend.services.pyq_service import get_available_courses, get_btech_branches
+    return jsonify({
+        "courses": get_available_courses(),
+        "btech_branches": get_btech_branches(),
+    })

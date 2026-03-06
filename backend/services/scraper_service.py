@@ -77,75 +77,82 @@ def _categorize_notice(title):
 # ─── Main Scraper Functions ──────────────────────
 
 def scrape_hptu_notices():
-    """Scrape latest notifications from the official HPTU website notice board."""
+    """Scrape latest notifications from the official HPTU website notice board.
+    Scrapes multiple pages for comprehensive coverage."""
     notices = []
+    seen_titles = set()
+    max_pages = 5  # Scrape first 5 pages (50 notices)
+
     try:
-        url = f"{BASE_URL}/notice-board"
-        resp = requests.get(url, headers=HEADERS, timeout=15)
-        resp.raise_for_status()
-        soup = BeautifulSoup(resp.text, "html.parser")
+        for page_num in range(max_pages):
+            url = f"{BASE_URL}/notice-board"
+            if page_num > 0:
+                url += f"?page={page_num}"
 
-        rows = soup.select("table tbody tr")
-        if not rows:
-            rows = soup.select("table tr")
+            resp = requests.get(url, headers=HEADERS, timeout=15)
+            if resp.status_code != 200:
+                break
+            soup = BeautifulSoup(resp.text, "html.parser")
 
-        for row in rows:
-            cells = row.find_all("td")
-            if len(cells) < 2:
-                continue
+            table = soup.find("table")
+            if not table:
+                break
 
-            title = cells[0].get_text(strip=True)
-            if not title or len(title) < 5:
-                continue
+            rows = table.find_all("tr")
+            page_count = 0
 
-            date = cells[1].get_text(strip=True) if len(cells) > 1 else ""
-            last_date = cells[2].get_text(strip=True) if len(cells) > 2 else ""
+            for row in rows:
+                cells = row.find_all("td")
+                if len(cells) < 2:
+                    continue
 
-            doc_link = ""
-            for cell in cells:
-                link_tag = cell.find("a", href=True)
-                if link_tag:
-                    href = link_tag["href"]
-                    href = _make_absolute(href)
-                    if href.endswith(".pdf") or "default/files" in href or href.startswith("http"):
-                        doc_link = href
-                        break
+                # Column 0: Title, Column 1: Date, Column 2: Expiry, Column 3: Link, Column 4: Attachments
+                title = cells[0].get_text(strip=True)
+                if not title or len(title) < 5 or title in seen_titles:
+                    continue
+                seen_titles.add(title)
 
-            notices.append({
-                "title": title,
-                "date": date,
-                "last_date": last_date,
-                "link": doc_link,
-                "source": "hptu_official",
-                "category": _categorize_notice(title),
-                "pdf_text": "",
-            })
+                date = cells[1].get_text(strip=True) if len(cells) > 1 else ""
+                last_date = cells[2].get_text(strip=True) if len(cells) > 2 else ""
 
-        # Fallback: try the home page ticker
-        if not notices:
-            home_resp = requests.get(f"{BASE_URL}/", headers=HEADERS, timeout=15)
-            home_soup = BeautifulSoup(home_resp.text, "html.parser")
-            ticker_links = home_soup.select(
-                '.marquee-content a, .whats-new a, [class*="ticker"] a, [class*="notification"] a'
-            )
-            for link in ticker_links[:30]:
-                title = link.get_text(strip=True)
-                href = link.get("href", "")
-                if title and len(title) > 10:
-                    href = _make_absolute(href)
-                    notices.append({
-                        "title": title,
-                        "date": "",
-                        "last_date": "",
-                        "link": href,
-                        "source": "hptu_official",
-                        "category": _categorize_notice(title),
-                        "pdf_text": "",
-                    })
+                # External link (column 3)
+                external_link = ""
+                if len(cells) > 3:
+                    ext_tag = cells[3].find("a", href=True)
+                    if ext_tag:
+                        external_link = ext_tag["href"].strip()
+
+                # Attachment PDF link (column 4)
+                doc_link = ""
+                if len(cells) > 4:
+                    att_tag = cells[4].find("a", href=True)
+                    if att_tag:
+                        doc_link = _make_absolute(att_tag["href"])
+
+                # Use external link if no attachment
+                if not doc_link and external_link:
+                    doc_link = external_link
+
+                notices.append({
+                    "title": title,
+                    "date": date,
+                    "last_date": last_date,
+                    "link": doc_link,
+                    "source": "hptu_official",
+                    "category": _categorize_notice(title),
+                    "pdf_text": "",
+                })
+                page_count += 1
+
+            print(f"  📋 Page {page_num + 1}: {page_count} notices scraped")
+
+            if page_count == 0:
+                break
 
     except Exception as e:
         print(f"HPTU Scrape Error: {e}")
 
+    print(f"  ✅ Total HPTU notices scraped: {len(notices)}")
     return notices
 
 
