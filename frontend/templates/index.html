@@ -207,8 +207,8 @@
         </div>
 
         <!-- HPTU Official Notices -->
-        <h3 style="font-size:15px; color:var(--text); margin-bottom:16px; font-weight:600;">
-            <i class="fas fa-globe" style="color:var(--gold); margin-right:6px;"></i>
+        <h3 class="notice-section-title">
+            <i class="fas fa-globe" class="notice-icon"></i>
             HPTU Official Notices
         </h3>
         <div class="notices-list" id="hptuNoticesList">
@@ -219,8 +219,8 @@
         </div>
 
         <!-- Admin / University Notices -->
-        <h3 style="font-size:15px; color:var(--text); margin:36px 0 16px; font-weight:600;">
-            <i class="fas fa-bullhorn" style="color:var(--gold); margin-right:6px;"></i>
+        <h3 class="notice-section-title notice-section-title-upper">
+            <i class="fas fa-bullhorn" class="notice-icon"></i>
             University Announcements
         </h3>
         <div class="notices-list" id="noticesList">
@@ -318,7 +318,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2025 HPTU AI Assistant | Built with <i class="fas fa-heart" style="color:var(--gold);"></i> for students
+            &copy; 2025 HPTU AI Assistant | Built with <i class="fas fa-heart heart-icon"></i> for students
         </div>
     </footer>
 
@@ -332,7 +332,7 @@
                 </div>
                 <div>
                     <strong>HPTU AI Assistant</strong>
-                    <span class="chat-status"><i class="fas fa-circle" style="font-size:7px;margin-right:4px;"></i> Online</span>
+                    <span class="chat-status"><i class="fas fa-circle status-indicator"></i> Online</span>
                 </div>
             </div>
             <div class="chat-header-actions">
@@ -364,8 +364,9 @@
         <div class="chat-footer">
             <label class="upload-label" for="pdfUpload" title="Upload PDF">
                 <i class="fas fa-paperclip"></i>
+                <span class="sr-only">Upload PDF</span>
             </label>
-            <input type="file" id="pdfUpload" accept=".pdf" style="display:none">
+            <input type="file" id="pdfUpload" accept=".pdf" aria-label="Upload PDF">
             <input type="text" id="userInput" placeholder="Ask me anything about HPTU..." autocomplete="off">
             <button id="voice-btn" title="Voice input" aria-label="Voice input">
                 <i class="fas fa-microphone"></i>
