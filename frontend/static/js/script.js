@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const typingEl = showTypingIndicator();
         chatStatus.textContent = "● Thinking...";
-        chatStatus.style.color = "#f4b400";
+        chatStatus.style.color = "#f7941d";
 
         try {
             const response = await fetch("/chat", {
@@ -278,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wrapper.className = "bot-message";
         const avatar = document.createElement("div");
         avatar.className = "msg-avatar";
-        avatar.innerHTML = '<i class="fas fa-robot"></i>';
+        avatar.innerHTML = '<img src="/static/images/hptu-logo.png" alt="HPTU">';
         const bubble = document.createElement("div");
         bubble.className = "msg-bubble";
         bubble.innerHTML = formatBotMessage(message);
@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wrapper.className = "typing-indicator";
         const avatar = document.createElement("div");
         avatar.className = "msg-avatar";
-        avatar.innerHTML = '<i class="fas fa-robot"></i>';
+        avatar.innerHTML = '<img src="/static/images/hptu-logo.png" alt="HPTU">';
         const dots = document.createElement("div");
         dots.className = "typing-dots";
         dots.innerHTML = "<span></span><span></span><span></span>";
@@ -335,7 +335,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     badge.style.color = "#6fcf97";
                 } else if (data.status === "running") {
                     badge.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Updating...';
-                    badge.style.color = "#f4b400";
+                    badge.style.color = "#f7941d";
                 }
             }
         } catch (e) {
@@ -430,16 +430,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 fees: "#d4a200",
                 syllabus: "#7c3aed",
                 recruitment: "#e67e22",
-                general: "#0b2c6b"
+                general: "#2f3e9e"
             };
             var cat = notice.category || "general";
-            categoryBadge = '<span style="background:' + (catColors[cat] || "#0b2c6b") +
+            categoryBadge = '<span style="background:' + (catColors[cat] || "#2f3e9e") +
                 '; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; margin-left:8px;">' +
                 cat.charAt(0).toUpperCase() + cat.slice(1) + '</span>';
 
             var linkHtml = "";
             if (notice.link) {
-                linkHtml = ' <a href="' + notice.link + '" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:600; font-size:12px;"><i class="fas fa-external-link-alt"></i> View</a>';
+                linkHtml = ' <a href="' + notice.link + '" target="_blank" rel="noopener" style="color:#2f3e9e; font-weight:600; font-size:12px;"><i class="fas fa-external-link-alt"></i> View</a>';
             }
 
             var pdfBadge = "";
@@ -448,7 +448,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             item.innerHTML =
-                '<div class="notice-icon"><i class="fas fa-globe" style="color:#0b2c6b;"></i></div>' +
+                '<div class="notice-icon"><i class="fas fa-globe" style="color:#2f3e9e;"></i></div>' +
                 '<div class="notice-content">' +
                 "<strong>" + (notice.title || "Notification") + "</strong>" + categoryBadge + pdfBadge +
                 "<p>" + (notice.date || "") +
@@ -463,9 +463,9 @@ document.addEventListener("DOMContentLoaded", function () {
             var viewAll = document.createElement("div");
             viewAll.className = "notice-item";
             viewAll.innerHTML =
-                '<div class="notice-icon"><i class="fas fa-arrow-right" style="color:#f4b400;"></i></div>' +
+                '<div class="notice-icon"><i class="fas fa-arrow-right" style="color:#f7941d;"></i></div>' +
                 '<div class="notice-content">' +
-                '<a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#0b2c6b; font-weight:700;">View all notifications on HPTU website →</a>' +
+                '<a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#2f3e9e; font-weight:700;">View all notifications on HPTU website →</a>' +
                 '</div>';
             hptuList.appendChild(viewAll);
         }
@@ -496,7 +496,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     '<div class="syllabus-item empty-placeholder">' +
                     '<i class="fas fa-book" style="font-size:32px; color:#ccc; margin-bottom:10px;"></i>' +
                     '<p style="color:#888;">Syllabus data will appear here after auto-scraping from HPTU website.</p>' +
-                    '<p style="color:#aaa; font-size:12px;">Visit <a href="https://www.himtu.ac.in" target="_blank" style="color:#0b2c6b;">himtu.ac.in</a> for the latest syllabus.</p>' +
+                    '<p style="color:#aaa; font-size:12px;">Visit <a href="https://www.himtu.ac.in" target="_blank" style="color:#2f3e9e;">himtu.ac.in</a> for the latest syllabus.</p>' +
                     '</div>';
                 return;
             }
@@ -540,7 +540,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     '<div class="fee-item empty-placeholder">' +
                     '<i class="fas fa-rupee-sign" style="font-size:32px; color:#ccc; margin-bottom:10px;"></i>' +
                     '<p style="color:#888;">Fee structure data will appear here after auto-scraping from HPTU website.</p>' +
-                    '<p style="color:#aaa; font-size:12px;">Visit <a href="https://www.himtu.ac.in" target="_blank" style="color:#0b2c6b;">himtu.ac.in</a> for current fee details.</p>' +
+                    '<p style="color:#aaa; font-size:12px;">Visit <a href="https://www.himtu.ac.in" target="_blank" style="color:#2f3e9e;">himtu.ac.in</a> for current fee details.</p>' +
                     '</div>';
                 return;
             }
@@ -555,7 +555,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 } else if (item.title) {
                     content = '<h4>' + item.title + '</h4>';
                     if (item.link) {
-                        content += '<a href="' + item.link + '" target="_blank" rel="noopener" style="color:#0b2c6b; font-size:12px;"><i class="fas fa-external-link-alt"></i> View Details</a>';
+                        content += '<a href="' + item.link + '" target="_blank" rel="noopener" style="color:#2f3e9e; font-size:12px;"><i class="fas fa-external-link-alt"></i> View Details</a>';
                     }
                 }
 

@@ -5,6 +5,9 @@
     <title>HPTU AI Assistant — Himachal Pradesh Technical University</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="AI-Powered Smart Helpdesk for Himachal Pradesh Technical University, Hamirpur">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -27,7 +30,7 @@
         <div class="header-content">
             <div class="logo-section">
                 <div class="logo-icon">
-                    <i class="fas fa-university"></i>
+                    <img src="{{ url_for('static', filename='images/hptu-logo.png') }}" alt="HPTU Logo">
                 </div>
                 <div class="logo-text">
                     <h1>Himachal Pradesh Technical University</h1>
@@ -164,7 +167,7 @@
     <!-- NOTIFICATIONS SECTION -->
     <section class="notices-section" id="notices">
         <div class="section-title">
-            <h2><i class="fas fa-bell" style="color:#f4b400;"></i> Live Notifications</h2>
+            <h2><i class="fas fa-bell" style="color:#f7941d;"></i> Live Notifications</h2>
             <div class="title-line"></div>
             <p class="section-subtitle">Auto-updated from HPTU official website</p>
         </div>
@@ -190,8 +193,8 @@
         </div>
 
         <!-- University Announcements -->
-        <h3 style="color:#0b2c6b; margin:30px 0 12px; font-size:16px;">
-            <i class="fas fa-bullhorn" style="color:#f4b400;"></i> University Announcements
+        <h3 style="color:#2f3e9e; margin:30px 0 12px; font-size:16px;">
+            <i class="fas fa-bullhorn" style="color:#f7941d;"></i> University Announcements
         </h3>
         <div class="notices-list" id="notices-list">
             <div class="notice-item">
@@ -206,7 +209,7 @@
     <!-- SYLLABUS SECTION -->
     <section class="syllabus-section" id="syllabus">
         <div class="section-title">
-            <h2><i class="fas fa-book" style="color:#f4b400;"></i> Syllabus & Curriculum</h2>
+            <h2><i class="fas fa-book" style="color:#f7941d;"></i> Syllabus & Curriculum</h2>
             <div class="title-line"></div>
             <p class="section-subtitle">Download latest syllabus for your program</p>
         </div>
@@ -221,7 +224,7 @@
     <!-- FEES SECTION -->
     <section class="fees-section" id="fees">
         <div class="section-title">
-            <h2><i class="fas fa-rupee-sign" style="color:#f4b400;"></i> Fee Structure</h2>
+            <h2><i class="fas fa-rupee-sign" style="color:#f7941d;"></i> Fee Structure</h2>
             <div class="title-line"></div>
             <p class="section-subtitle">Current fee details for various programs</p>
         </div>
@@ -297,9 +300,9 @@
     <div class="chat-container" id="chat-container">
         <div class="chat-header">
             <div class="chat-header-left">
-                <div class="chat-avatar"><i class="fas fa-robot"></i></div>
+                <div class="chat-avatar"><img src="{{ url_for('static', filename='images/hptu-logo.png') }}" alt="HPTU"></div>
                 <div>
-                    <strong>HPTU AI Assistant</strong>
+                    <strong>HPTU Nexus AI Assistant</strong>
                     <span class="chat-status" id="chat-status">● Online — Real-time Data</span>
                 </div>
             </div>
@@ -315,7 +318,7 @@
 
         <div class="chat-body" id="chat-body">
             <div class="bot-message">
-                <div class="msg-avatar"><i class="fas fa-robot"></i></div>
+                <div class="msg-avatar"><img src="{{ url_for('static', filename='images/hptu-logo.png') }}" alt="HPTU"></div>
                 <div class="msg-bubble">
                     👋 Welcome to <strong>HPTU AI Assistant!</strong><br><br>
                     I have <strong>real-time access</strong> to HPTU data including:<br>
