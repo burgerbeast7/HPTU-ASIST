@@ -40,8 +40,16 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - Auto-sends the message after speech is recognized
 - Visual feedback with animated pulse indicator while listening
 
+### � Previous Year Question Papers (PYQ)
+- Scrapes **1000+ question papers** from [hptuonline.com](https://www.hptuonline.com)
+- Covers all courses: B.Tech (8 branches), BBA, BCA, MBA, MCA, B.Pharmacy, M.Pharmacy, M.Sc, M.Tech, Ph.D, Yoga, HPTSB Diploma/ITI
+- **Structured data extraction**: subject name, semester, exam period, paper code
+- Interactive chatbot flow — asks for course → branch → semester → subject before providing download links
+- Searchable via API with course/branch/semester filters
+
 ### 📋 Auto-Scraping System
-- Scrapes the official [himtu.ac.in](https://www.himtu.ac.in) website every **30 minutes**
+- Scrapes the official [himtu.ac.in](https://www.himtu.ac.in) notice board with **multi-page support** (50+ notices)
+- Proper 5-column table parsing: Title, Date, Expiry, Link, Attachments
 - Extracts notices, date sheets, exam schedules, circulars, forms, and fee notifications
 - Downloads and extracts text from PDF documents for AI knowledge
 - Scrapes **8 HPTU pages** and collects **55+ documents** with direct links
@@ -75,7 +83,7 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 | **Backend** | Python 3.12, Flask 3.1 (Blueprints) |
 | **AI Engine** | Cohere API (command-a-03-2025 / command-r7b-12-2024) |
 | **Database** | MongoDB (pymongo 4.7) |
-| **Web Scraping** | BeautifulSoup4, Requests |
+| **Web Scraping** | BeautifulSoup4, Requests (himtu.ac.in + hptuonline.com) |
 | **PDF Processing** | pypdf |
 | **Task Scheduler** | APScheduler 3.10 |
 | **Frontend** | HTML5, CSS3, JavaScript (Vanilla) |
@@ -104,7 +112,8 @@ HPTU-AI-Assistant/
 │   └── services/
 │       ├── chat_service.py     # Cohere AI chatbot with real-time context
 │       ├── scraper_service.py  # HPTU website scraper (notices, docs, PDFs)
-│       ├── notice_service.py   # MongoDB CRUD for notices, syllabus, fees, docs
+│       ├── pyq_service.py      # PYQ scraper for hptuonline.com (structured data)
+│       ├── notice_service.py   # MongoDB CRUD for notices, syllabus, fees, docs, PYQ
 │       └── pdf_service.py      # PDF text extraction service
 │
 ├── frontend/                   # Frontend application
@@ -206,6 +215,8 @@ HPTU-AI-Assistant/
 | `/api/fees` | GET | Get fee structure data |
 | `/api/scraper-status` | GET | Get last scraper run status |
 | `/api/scraped-pdfs` | GET | Get list of scanned PDFs |
+| `/api/pyq/search` | GET | Search PYQ papers (`?q=&course=&branch=&semester=`) |
+| `/api/pyq/courses` | GET | Get available PYQ courses and branches |
 | `/admin/login` | GET/POST | Admin login |
 | `/admin/dashboard` | GET | Admin dashboard |
 | `/admin/trigger-scrape` | POST | Manually trigger scraper |
@@ -242,6 +253,8 @@ web: gunicorn run:app
 
 - [ ] Multi-language support (Hindi + English)
 - [x] Voice-based query input (Web Speech API)
+- [x] PYQ system with structured data (course/branch/semester/subject)
+- [x] Multi-page notice scraping from official HPTU site
 - [ ] Push notifications for new notices
 - [ ] Student login with personalized dashboard
 - [ ] Integration with HPTU exam portal APIs
@@ -259,6 +272,7 @@ This project is licensed under the **MIT License**.
 
 - **Himachal Pradesh Technical University (HPTU)** — for the official data source
 - **Cohere** — for the AI language model API
+- **HPTUOnline.com** — for previous year question papers
 - **MongoDB** — for the database platform
 - **Flask** — for the web framework
 
