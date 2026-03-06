@@ -260,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const div = document.createElement('div');
         div.className = 'bot-message';
         div.innerHTML =
-            '<div class="msg-avatar"><img src="/static/hptu-logo.png" alt="HPTU"></div>' +
+            '<div class="msg-avatar"><img src="https://media.9curry.com/uploads/organization/image/2794/hptu-logo.png" alt="HPTU"></div>' +
             '<div class="msg-bubble">' + formatBotMessage(text) + '</div>';
         chatBody.appendChild(div);
         chatBody.scrollTop = chatBody.scrollHeight;
@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
         div.className = 'typing-indicator';
         div.id = 'typingIndicator';
         div.innerHTML =
-            '<div class="msg-avatar"><img src="/static/hptu-logo.png" alt="HPTU"></div>' +
+            '<div class="msg-avatar"><img src="https://media.9curry.com/uploads/organization/image/2794/hptu-logo.png" alt="HPTU"></div>' +
             '<div class="typing-dots"><span></span><span></span><span></span></div>';
         chatBody.appendChild(div);
         chatBody.scrollTop = chatBody.scrollHeight;
