@@ -269,7 +269,7 @@ def get_chat_response(user_message, pdf_text=""):
 
         # Use faster model for general questions, full model only when data-heavy
         topics = _detect_query_topics(user_message)
-        model = "command-r-plus" if not topics else "command-a-03-2025"
+        model = "command-r7b-12-2024" if not topics else "command-a-03-2025"
 
         response = co.chat(
             model=model,

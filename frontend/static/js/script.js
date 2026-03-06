@@ -18,6 +18,68 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let isSending = false;
 
+    // ─── Voice Input (Web Speech API) ───────────
+    const voiceBtn = document.getElementById("voice-btn");
+    const voiceIcon = document.getElementById("voice-icon");
+    let recognition = null;
+    let isListening = false;
+
+    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.lang = "en-IN";
+        recognition.interimResults = true;
+        recognition.continuous = false;
+
+        recognition.onstart = function () {
+            isListening = true;
+            voiceBtn.classList.add("listening");
+            voiceIcon.className = "fas fa-stop";
+            userInput.placeholder = "🎤 Listening...";
+        };
+
+        recognition.onresult = function (event) {
+            let transcript = "";
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            userInput.value = transcript;
+            if (event.results[event.results.length - 1].isFinal) {
+                stopListening();
+                sendMessage();
+            }
+        };
+
+        recognition.onerror = function (event) {
+            console.error("Speech error:", event.error);
+            stopListening();
+            if (event.error === "not-allowed") {
+                addBotMessage("🎤 Microphone access denied. Please allow microphone permissions in your browser settings.");
+            }
+        };
+
+        recognition.onend = function () {
+            stopListening();
+        };
+
+        voiceBtn.addEventListener("click", function () {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+    } else {
+        voiceBtn.style.display = "none";
+    }
+
+    function stopListening() {
+        isListening = false;
+        voiceBtn.classList.remove("listening");
+        voiceIcon.className = "fas fa-microphone";
+        userInput.placeholder = "Ask about notices, exams, fees, syllabus...";
+    }
+
     // ─── Toggle Chat ────────────────────────────
     function openChat() {
         chatContainer.style.display = "flex";

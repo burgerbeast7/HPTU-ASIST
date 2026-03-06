@@ -30,6 +30,13 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - Supports user-uploaded PDF scanning and Q&A
 - Markdown-formatted responses with clickable links
 
+### 🎤 Voice Command Input
+- Speak your queries using the built-in microphone button
+- Uses the **Web Speech API** for real-time speech-to-text
+- Supports English (India) locale
+- Auto-sends the message after speech is recognized
+- Visual feedback with animated pulse indicator while listening
+
 ### 📋 Auto-Scraping System
 - Scrapes the official [himtu.ac.in](https://www.himtu.ac.in) website every **30 minutes**
 - Extracts notices, date sheets, exam schedules, circulars, forms, and fee notifications
@@ -63,7 +70,7 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 | Layer | Technology |
 |---|---|
 | **Backend** | Python 3.12, Flask 3.1 (Blueprints) |
-| **AI Engine** | Cohere API (command-a-03-2025 model) |
+| **AI Engine** | Cohere API (command-a-03-2025 / command-r7b-12-2024) |
 | **Database** | MongoDB (pymongo 4.7) |
 | **Web Scraping** | BeautifulSoup4, Requests |
 | **PDF Processing** | pypdf |
@@ -231,7 +238,7 @@ web: gunicorn run:app
 ## 🔮 Future Enhancements
 
 - [ ] Multi-language support (Hindi + English)
-- [ ] Voice-based query input
+- [x] Voice-based query input (Web Speech API)
 - [ ] Push notifications for new notices
 - [ ] Student login with personalized dashboard
 - [ ] Integration with HPTU exam portal APIs
