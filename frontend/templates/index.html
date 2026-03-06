@@ -1,140 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>HPTU AI Assistant — Himachal Pradesh Technical University</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI-Powered Smart Helpdesk for Himachal Pradesh Technical University, Hamirpur">
+    <meta name="description" content="HPTU AI Assistant - Your intelligent companion for Himachal Pradesh Technical University information, notifications, syllabus, fees, and more.">
+    <title>HPTU AI Assistant | Himachal Pradesh Technical University</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='hptu-logo.png') }}" type="image/png">
 </head>
 <body>
-
-    <!-- TOP BAR -->
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <span><i class="fas fa-phone-alt"></i> 01972-223504</span>
-            <span><i class="fas fa-envelope"></i> info@himtu.ac.in</span>
-            <span><i class="fas fa-map-marker-alt"></i> Hamirpur, HP - 177001</span>
-            <span class="auto-update-badge" id="auto-update-badge">
-                <i class="fas fa-sync-alt fa-spin"></i> Auto-updating
-            </span>
+    <!-- ═══════ SPLASH SCREEN ═══════ -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-logo">
+            <img src="{{ url_for('static', filename='hptu-logo.png') }}" alt="HPTU">
+        </div>
+        <div class="splash-text">
+            <h1>HPTU AI Assistant</h1>
+            <p>Loading Experience</p>
+        </div>
+        <div class="splash-bar">
+            <div class="splash-bar-fill"></div>
         </div>
     </div>
 
-    <!-- HEADER -->
+    <!-- ═══════ TOP BAR ═══════ -->
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <span><i class="fas fa-phone-alt"></i> 01onal-893-222111</span>
+            <span><i class="fas fa-envelope"></i> registrar@himtu.ac.in</span>
+            <span><i class="fas fa-map-marker-alt"></i> Hamirpur, HP — 177001</span>
+            <div class="auto-update-badge" id="autoUpdateBadge">
+                <i class="fas fa-sync-alt"></i> Auto-Syncing
+            </div>
+            <div class="theme-toggle-wrapper">
+                <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" aria-label="Toggle theme"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ HEADER ═══════ -->
     <header>
         <div class="header-content">
             <div class="logo-section">
                 <div class="logo-icon">
-                    <img src="{{ url_for('static', filename='images/hptu-logo.png') }}" alt="HPTU Logo">
+                    <img src="{{ url_for('static', filename='hptu-logo.png') }}" alt="HPTU Logo">
                 </div>
                 <div class="logo-text">
-                    <h1>Himachal Pradesh Technical University</h1>
                     <p>हिमाचल प्रदेश तकनीकी विश्वविद्यालय</p>
-                    <span class="tagline">AI-Powered Smart Helpdesk System</span>
+                    <h1>Himachal Pradesh Technical University</h1>
+                    <span class="tagline"><i class="fas fa-robot"></i> AI-Powered Assistant</span>
                 </div>
             </div>
             <div class="header-right">
-                <a href="https://www.himtu.ac.in" target="_blank" rel="noopener" class="visit-btn">
+                <a href="https://himtu.ac.in" target="_blank" rel="noopener noreferrer" class="visit-btn">
                     <i class="fas fa-external-link-alt"></i> Official Website
                 </a>
             </div>
         </div>
     </header>
 
-    <!-- NAVIGATION -->
+    <!-- ═══════ NAVIGATION ═══════ -->
     <nav>
-        <div class="nav-content">
-            <a href="#about"><i class="fas fa-info-circle"></i> About</a>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="nav-content" id="navContent">
+            <a href="#about"><i class="fas fa-university"></i> About</a>
             <a href="#programs"><i class="fas fa-graduation-cap"></i> Programs</a>
-            <a href="#notices"><i class="fas fa-bullhorn"></i> Notifications</a>
+            <a href="#notifications"><i class="fas fa-bell"></i> Notifications</a>
             <a href="#syllabus"><i class="fas fa-book"></i> Syllabus</a>
             <a href="#fees"><i class="fas fa-rupee-sign"></i> Fees</a>
-            <a href="#contact"><i class="fas fa-phone"></i> Contact</a>
+            <a href="#contact"><i class="fas fa-envelope"></i> Contact</a>
         </div>
-        <button class="nav-toggle" id="nav-toggle" title="Toggle navigation"><i class="fas fa-bars"></i></button>
     </nav>
 
-    <!-- HERO SECTION -->
+    <!-- ═══════ HERO ═══════ -->
     <section class="hero">
+        <div class="hero-particles">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </div>
         <div class="hero-overlay">
             <div class="hero-text">
-                <h2>Welcome to HPTU AI Assistant</h2>
-                <p>Real-time notifications, exam updates, syllabus, fees & instant AI answers — all in one place</p>
-                <button class="hero-cta" id="open-chat-hero">
-                    <i class="fas fa-robot"></i> Ask AI Assistant
+                <h2>Your AI-Powered University Guide</h2>
+                <p>Get instant answers about admissions, results, syllabus, fees, and everything HPTU — powered by intelligent AI.</p>
+                <button class="hero-cta" onclick="openChat()">
+                    <i class="fas fa-comments"></i> Start a Conversation
                 </button>
             </div>
         </div>
     </section>
 
-    <!-- LIVE STATS BAR -->
-    <section class="live-stats-bar">
+    <!-- ═══════ LIVE STATS ═══════ -->
+    <div class="live-stats-bar">
         <div class="live-stats-content">
             <div class="live-stat">
                 <i class="fas fa-bell"></i>
-                <span id="stat-notices">0</span> Live Notifications
+                <span id="statNotices">0</span> Live Notices
             </div>
             <div class="live-stat">
                 <i class="fas fa-file-pdf"></i>
-                <span id="stat-pdfs">0</span> PDFs Scanned
+                <span id="statPdfs">0</span> PDFs Indexed
             </div>
             <div class="live-stat">
-                <i class="fas fa-book"></i>
-                <span id="stat-syllabus">0</span> Syllabus Items
+                <i class="fas fa-book-open"></i>
+                <span id="statSyllabus">0</span> Syllabi Available
             </div>
             <div class="live-stat">
                 <i class="fas fa-clock"></i>
-                Last Updated: <span id="stat-updated">Loading...</span>
+                Last Updated: <span id="statUpdated">—</span>
             </div>
         </div>
-    </section>
+    </div>
 
-    <!-- QUICK INFO CARDS -->
+    <!-- ═══════ INFO CARDS ═══════ -->
     <section class="info-cards" id="about">
-        <div class="section-title">
-            <h2>Quick Information</h2>
+        <div class="section-title reveal">
+            <h2>About HPTU</h2>
             <div class="title-line"></div>
+            <p class="section-subtitle">Established in 2010 by the Government of Himachal Pradesh</p>
         </div>
-        <div class="cards-grid">
+        <div class="cards-grid reveal-stagger">
             <div class="card">
                 <div class="card-icon"><i class="fas fa-university"></i></div>
-                <h3>About HPTU</h3>
-                <p>Established in 2010, HPTU is the premier technical university of Himachal Pradesh, affiliating engineering, pharmacy and management colleges across the state.</p>
+                <h3>About the University</h3>
+                <p>HPTU is a state university established under the HP Technical University Act, regulating technical education across Himachal Pradesh.</p>
             </div>
             <div class="card">
                 <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
                 <h3>Programs Offered</h3>
-                <p>B.Tech, M.Tech, BBA, MBA, BCA, MCA, B.Pharmacy, M.Pharmacy, Diploma and various other technical programs.</p>
+                <p>B.Tech, M.Tech, BBA, MBA, BCA, MCA, B.Pharmacy, M.Pharmacy, Diploma and PhD programs across engineering and management.</p>
             </div>
             <div class="card">
-                <div class="card-icon"><i class="fas fa-clipboard-check"></i></div>
+                <div class="card-icon"><i class="fas fa-file-alt"></i></div>
                 <h3>Examinations</h3>
-                <p>University conducts end-semester exams for all affiliated colleges. Results and date sheets available on the official website.</p>
+                <p>Comprehensive examination system with regular semester exams, re-evaluation options, and online result publication.</p>
             </div>
             <div class="card">
                 <div class="card-icon"><i class="fas fa-robot"></i></div>
                 <h3>AI Assistant</h3>
-                <p>Ask our AI chatbot anything about HPTU — it knows the latest notifications, exam schedules, fees, and more in real-time!</p>
+                <p>This AI assistant provides instant answers about HPTU — from syllabus and fees to notifications and previous year papers.</p>
             </div>
         </div>
     </section>
 
-    <!-- PROGRAMS SECTION -->
+    <!-- ═══════ PROGRAMS ═══════ -->
     <section class="programs-section" id="programs">
-        <div class="section-title">
+        <div class="section-title reveal">
             <h2>Academic Programs</h2>
             <div class="title-line"></div>
+            <p class="section-subtitle">Diverse programs across engineering, management, and pharmacy</p>
         </div>
-        <div class="programs-grid">
+        <div class="programs-grid reveal-stagger">
             <div class="program-item">
-                <i class="fas fa-laptop-code"></i>
+                <i class="fas fa-microchip"></i>
                 <h4>B.Tech / M.Tech</h4>
-                <p>CSE, ECE, EE, ME, CE, IT</p>
+                <p>Engineering</p>
             </div>
             <div class="program-item">
                 <i class="fas fa-pills"></i>
@@ -147,216 +172,218 @@
                 <p>Business Administration</p>
             </div>
             <div class="program-item">
-                <i class="fas fa-desktop"></i>
+                <i class="fas fa-laptop-code"></i>
                 <h4>BCA / MCA</h4>
                 <p>Computer Applications</p>
             </div>
             <div class="program-item">
                 <i class="fas fa-tools"></i>
                 <h4>Diploma Programs</h4>
-                <p>Various Engineering Disciplines</p>
+                <p>Technical Diploma</p>
             </div>
             <div class="program-item">
                 <i class="fas fa-flask"></i>
-                <h4>Research (Ph.D)</h4>
-                <p>Doctoral Programs</p>
+                <h4>Ph.D. Programs</h4>
+                <p>Research & Doctoral</p>
             </div>
         </div>
     </section>
 
-    <!-- NOTIFICATIONS SECTION -->
-    <section class="notices-section" id="notices">
-        <div class="section-title">
-            <h2><i class="fas fa-bell" style="color:#f7941d;"></i> Live Notifications</h2>
+    <!-- ═══════ NOTIFICATIONS ═══════ -->
+    <section class="notices-section" id="notifications">
+        <div class="section-title reveal">
+            <h2>Latest Notifications</h2>
             <div class="title-line"></div>
-            <p class="section-subtitle">Auto-updated from HPTU official website</p>
+            <p class="section-subtitle">Live-synced from himtu.ac.in and university announcements</p>
         </div>
 
         <!-- Filter Tabs -->
-        <div class="notice-filters">
+        <div class="notice-filters reveal">
             <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="examination">Exams</button>
-            <button class="filter-btn" data-filter="admission">Admissions</button>
+            <button class="filter-btn" data-filter="examination">Examination</button>
+            <button class="filter-btn" data-filter="admission">Admission</button>
             <button class="filter-btn" data-filter="fees">Fees</button>
-            <button class="filter-btn" data-filter="syllabus">Syllabus</button>
-            <button class="filter-btn" data-filter="general">General</button>
+            <button class="filter-btn" data-filter="recruitment">Recruitment</button>
         </div>
 
         <!-- HPTU Official Notices -->
-        <div class="notices-list" id="hptu-notices-list">
-            <div class="notice-item">
-                <div class="notice-icon"><i class="fas fa-spinner fa-spin"></i></div>
-                <div class="notice-content">
-                    <strong>Loading live notifications...</strong>
-                </div>
+        <h3 style="font-size:15px; color:var(--text); margin-bottom:16px; font-weight:600;">
+            <i class="fas fa-globe" style="color:var(--gold); margin-right:6px;"></i>
+            HPTU Official Notices
+        </h3>
+        <div class="notices-list" id="hptuNoticesList">
+            <div class="loading-placeholder">
+                <i class="fas fa-spinner"></i>
+                <p>Loading HPTU notices...</p>
             </div>
         </div>
 
-        <!-- University Announcements -->
-        <h3 style="color:#2f3e9e; margin:30px 0 12px; font-size:16px;">
-            <i class="fas fa-bullhorn" style="color:#f7941d;"></i> University Announcements
+        <!-- Admin / University Notices -->
+        <h3 style="font-size:15px; color:var(--text); margin:36px 0 16px; font-weight:600;">
+            <i class="fas fa-bullhorn" style="color:var(--gold); margin-right:6px;"></i>
+            University Announcements
         </h3>
-        <div class="notices-list" id="notices-list">
-            <div class="notice-item">
-                <div class="notice-icon"><i class="fas fa-bell"></i></div>
-                <div class="notice-content">
-                    <strong>Loading announcements...</strong>
-                </div>
+        <div class="notices-list" id="noticesList">
+            <div class="loading-placeholder">
+                <i class="fas fa-spinner"></i>
+                <p>Loading announcements...</p>
             </div>
         </div>
     </section>
 
-    <!-- SYLLABUS SECTION -->
+    <!-- ═══════ SYLLABUS ═══════ -->
     <section class="syllabus-section" id="syllabus">
-        <div class="section-title">
-            <h2><i class="fas fa-book" style="color:#f7941d;"></i> Syllabus & Curriculum</h2>
+        <div class="section-title reveal">
+            <h2>Syllabus</h2>
             <div class="title-line"></div>
-            <p class="section-subtitle">Download latest syllabus for your program</p>
+            <p class="section-subtitle">Academic curriculum and course structures</p>
         </div>
-        <div class="syllabus-grid" id="syllabus-list">
-            <div class="syllabus-item loading-placeholder">
-                <i class="fas fa-spinner fa-spin"></i>
+        <div class="syllabus-grid reveal-stagger" id="syllabusGrid">
+            <div class="loading-placeholder">
+                <i class="fas fa-spinner"></i>
                 <p>Loading syllabus data...</p>
             </div>
         </div>
     </section>
 
-    <!-- FEES SECTION -->
+    <!-- ═══════ FEES ═══════ -->
     <section class="fees-section" id="fees">
-        <div class="section-title">
-            <h2><i class="fas fa-rupee-sign" style="color:#f7941d;"></i> Fee Structure</h2>
+        <div class="section-title reveal">
+            <h2>Fee Structure</h2>
             <div class="title-line"></div>
-            <p class="section-subtitle">Current fee details for various programs</p>
+            <p class="section-subtitle">Updated fee information for all programs</p>
         </div>
-        <div class="fees-container" id="fees-list">
-            <div class="fee-item loading-placeholder">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Loading fee information...</p>
+        <div class="fees-container reveal-stagger" id="feesContainer">
+            <div class="loading-placeholder">
+                <i class="fas fa-spinner"></i>
+                <p>Loading fee data...</p>
             </div>
         </div>
     </section>
 
-    <!-- CONTACT SECTION -->
+    <!-- ═══════ CONTACT ═══════ -->
     <section class="contact-section" id="contact">
-        <div class="section-title light">
+        <div class="section-title light reveal">
             <h2>Contact Us</h2>
             <div class="title-line gold"></div>
         </div>
-        <div class="contact-grid">
+        <div class="contact-grid reveal-stagger">
             <div class="contact-card">
                 <i class="fas fa-map-marker-alt"></i>
                 <h4>Address</h4>
-                <p>Gandhi Chowk, Hamirpur,<br>Himachal Pradesh — 177001</p>
+                <p>HPTU, Hamirpur<br>Himachal Pradesh — 177001</p>
             </div>
             <div class="contact-card">
                 <i class="fas fa-phone-alt"></i>
                 <h4>Phone</h4>
-                <p>01972-223504</p>
+                <p>01893-222111<br>01893-222222</p>
             </div>
             <div class="contact-card">
                 <i class="fas fa-envelope"></i>
                 <h4>Email</h4>
-                <p>info@himtu.ac.in</p>
+                <p><a href="mailto:registrar@himtu.ac.in">registrar@himtu.ac.in</a></p>
             </div>
             <div class="contact-card">
                 <i class="fas fa-globe"></i>
                 <h4>Website</h4>
-                <p><a href="https://www.himtu.ac.in" target="_blank" rel="noopener">www.himtu.ac.in</a></p>
+                <p><a href="https://himtu.ac.in" target="_blank" rel="noopener noreferrer">himtu.ac.in</a></p>
             </div>
         </div>
     </section>
 
-    <!-- FOOTER -->
+    <!-- ═══════ FOOTER ═══════ -->
     <footer>
         <div class="footer-content">
             <div class="footer-col">
                 <h4>HPTU AI Assistant</h4>
-                <p>An AI-powered smart helpdesk system with real-time data from HPTU official website. Auto-updates notifications, syllabus, and fees.</p>
+                <p>An AI-powered companion for students and staff of Himachal Pradesh Technical University. Get instant access to notices, syllabus, fees, and more.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="https://www.himtu.ac.in" target="_blank" rel="noopener">Official Website</a></li>
                     <li><a href="#about">About HPTU</a></li>
-                    <li><a href="#notices">Notifications</a></li>
+                    <li><a href="#programs">Programs</a></li>
+                    <li><a href="#notifications">Notifications</a></li>
                     <li><a href="#syllabus">Syllabus</a></li>
+                    <li><a href="#fees">Fee Structure</a></li>
                 </ul>
             </div>
             <div class="footer-col">
-                <h4>Student Resources</h4>
+                <h4>Resources</h4>
                 <ul>
-                    <li><a href="#fees">Fee Structure</a></li>
-                    <li><a href="#programs">Programs</a></li>
+                    <li><a href="https://himtu.ac.in" target="_blank" rel="noopener noreferrer">HPTU Official</a></li>
+                    <li><a href="https://hptuonline.com" target="_blank" rel="noopener noreferrer">HPTU Online</a></li>
                     <li><a href="#contact">Contact Us</a></li>
                 </ul>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 Kunal Chauhan — HPTU AI Assistant | B.Tech CSE, Himachal Pradesh Technical University</p>
+            &copy; 2025 HPTU AI Assistant | Built with <i class="fas fa-heart" style="color:var(--gold);"></i> for students
         </div>
     </footer>
 
-    <!-- CHATBOT -->
-    <div class="chat-container" id="chat-container">
+    <!-- ═══════ CHATBOT ═══════ -->
+    <div class="chat-container" id="chatContainer">
+        <!-- Header -->
         <div class="chat-header">
             <div class="chat-header-left">
-                <div class="chat-avatar"><img src="{{ url_for('static', filename='images/hptu-logo.png') }}" alt="HPTU"></div>
+                <div class="chat-avatar">
+                    <img src="{{ url_for('static', filename='hptu-logo.png') }}" alt="HPTU">
+                </div>
                 <div>
-                    <strong>HPTU Nexus AI Assistant</strong>
-                    <span class="chat-status" id="chat-status">● Online — Real-time Data</span>
+                    <strong>HPTU AI Assistant</strong>
+                    <span class="chat-status"><i class="fas fa-circle" style="font-size:7px;margin-right:4px;"></i> Online</span>
                 </div>
             </div>
             <div class="chat-header-actions">
-                <button id="clear-pdf-btn" title="Clear PDF context" class="hidden">
-                    <i class="fas fa-file-circle-xmark"></i>
-                </button>
-                <button id="close-chat" title="Close chat">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button onclick="clearChat()" title="Clear Chat"><i class="fas fa-trash-alt"></i></button>
+                <button onclick="closeChat()" title="Close"><i class="fas fa-times"></i></button>
             </div>
         </div>
 
-        <div class="chat-body" id="chat-body">
+        <!-- Body -->
+        <div class="chat-body" id="chatBody">
             <div class="bot-message">
-                <div class="msg-avatar"><img src="{{ url_for('static', filename='images/hptu-logo.png') }}" alt="HPTU"></div>
+                <div class="msg-avatar">
+                    <img src="{{ url_for('static', filename='hptu-logo.png') }}" alt="HPTU">
+                </div>
                 <div class="msg-bubble">
-                    👋 Welcome to <strong>HPTU AI Assistant!</strong><br><br>
-                    I have <strong>real-time access</strong> to HPTU data including:<br>
-                    • 📋 Latest notifications & circulars<br>
-                    • 📝 Exam schedules & results<br>
-                    • 📚 Syllabus & curriculum<br>
-                    • 💰 Fee structure details<br>
-                    • 📄 Content from official PDFs<br><br>
-                    Ask me anything — I know what's happening at HPTU right now!
+                    Hello! I'm your <strong>HPTU AI Assistant</strong>. Ask me anything about admissions, results, syllabus, fees, or notifications. You can also upload a PDF for analysis!
                 </div>
             </div>
         </div>
 
-        <!-- CHAT FOOTER -->
+        <!-- PDF Indicator -->
+        <div class="pdf-indicator hidden" id="pdfIndicator">
+            <i class="fas fa-file-pdf"></i>
+            <span id="pdfFileName">document.pdf</span>
+            <button onclick="removePdf()"><i class="fas fa-times"></i> Remove</button>
+        </div>
+
+        <!-- Footer -->
         <div class="chat-footer">
-            <label for="pdfFile" class="upload-label" title="Upload a PDF to ask questions about it">
+            <label class="upload-label" for="pdfUpload" title="Upload PDF">
                 <i class="fas fa-paperclip"></i>
             </label>
-            <input type="file" id="pdfFile" accept="application/pdf" class="hidden" title="Choose a PDF file">
-            <input type="text" id="user-input" placeholder="Ask about notices, exams, fees, syllabus..." autocomplete="off">
-            <button id="voice-btn" title="Voice input" type="button">
-                <i class="fas fa-microphone" id="voice-icon"></i>
+            <input type="file" id="pdfUpload" accept=".pdf" style="display:none">
+            <input type="text" id="userInput" placeholder="Ask me anything about HPTU..." autocomplete="off">
+            <button id="voice-btn" title="Voice input" aria-label="Voice input">
+                <i class="fas fa-microphone"></i>
             </button>
-            <button id="send-message" title="Send message">
+            <button id="send-message" title="Send" aria-label="Send message">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
-
-        <div class="pdf-indicator hidden" id="pdf-indicator">
-            <i class="fas fa-file-pdf"></i>
-            <span id="pdf-name">document.pdf</span>
-            <button id="remove-pdf" title="Remove PDF"><i class="fas fa-times"></i></button>
-        </div>
     </div>
 
-    <!-- FLOAT BUTTON -->
-    <button class="chat-toggle" id="toggle-chat" title="Chat with HPTU AI">
-        <i class="fas fa-comments" id="chat-icon"></i>
+    <!-- ═══════ FLOAT BUTTON ═══════ -->
+    <button class="chat-toggle" id="chatToggle" title="Open AI Chat" aria-label="Toggle chat">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- ═══════ BACK TO TOP ═══════ -->
+    <button class="back-to-top" id="backToTop" title="Back to top" aria-label="Scroll to top">
+        <i class="fas fa-chevron-up"></i>
     </button>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

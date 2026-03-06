@@ -1,594 +1,524 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const chatBody = document.getElementById("chat-body");
-    const userInput = document.getElementById("user-input");
-    const sendMessageButton = document.getElementById("send-message");
-    const toggleChatButton = document.getElementById("toggle-chat");
-    const closeChatButton = document.getElementById("close-chat");
-    const chatContainer = document.getElementById("chat-container");
-    const chatIcon = document.getElementById("chat-icon");
-    const pdfFileInput = document.getElementById("pdfFile");
-    const pdfIndicator = document.getElementById("pdf-indicator");
-    const pdfNameSpan = document.getElementById("pdf-name");
-    const removePdfButton = document.getElementById("remove-pdf");
-    const clearPdfBtn = document.getElementById("clear-pdf-btn");
-    const navToggle = document.getElementById("nav-toggle");
-    const navContent = document.querySelector(".nav-content");
-    const heroCta = document.getElementById("open-chat-hero");
-    const chatStatus = document.getElementById("chat-status");
+/* ═══════════════════════════════════════════
+   HPTU AI ASSISTANT — Professional JS v3.0
+   ═══════════════════════════════════════════ */
 
-    let isSending = false;
+document.addEventListener('DOMContentLoaded', function () {
 
-    // ─── Voice Input (Web Speech API) ───────────
-    const voiceBtn = document.getElementById("voice-btn");
-    const voiceIcon = document.getElementById("voice-icon");
-    let recognition = null;
-    let isListening = false;
+    // ═══════ DOM REFS ═══════
+    const chatContainer = document.getElementById('chatContainer');
+    const chatBody = document.getElementById('chatBody');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('send-message');
+    const voiceBtn = document.getElementById('voice-btn');
+    const pdfUpload = document.getElementById('pdfUpload');
+    const pdfIndicator = document.getElementById('pdfIndicator');
+    const pdfFileName = document.getElementById('pdfFileName');
+    const chatToggle = document.getElementById('chatToggle');
+    const splashScreen = document.getElementById('splashScreen');
+    const themeToggle = document.getElementById('themeToggle');
+    const navToggle = document.getElementById('navToggle');
+    const navContent = document.getElementById('navContent');
+    const backToTop = document.getElementById('backToTop');
 
-    if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        recognition.lang = "en-IN";
-        recognition.interimResults = true;
-        recognition.continuous = false;
+    let uploadedPdf = null;
 
-        recognition.onstart = function () {
-            isListening = true;
-            voiceBtn.classList.add("listening");
-            voiceIcon.className = "fas fa-stop";
-            userInput.placeholder = "🎤 Listening...";
-        };
+    // ═══════ SPLASH SCREEN ═══════
+    setTimeout(() => {
+        if (splashScreen) {
+            splashScreen.classList.add('fade-out');
+            setTimeout(() => { splashScreen.style.display = 'none'; }, 600);
+        }
+    }, 2800);
 
-        recognition.onresult = function (event) {
-            let transcript = "";
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                transcript += event.results[i][0].transcript;
-            }
-            userInput.value = transcript;
-            if (event.results[event.results.length - 1].isFinal) {
-                stopListening();
-                sendMessage();
-            }
-        };
+    // ═══════ DARK MODE ═══════
+    function initTheme() {
+        const saved = localStorage.getItem('hptu-theme');
+        if (saved === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+    }
 
-        recognition.onerror = function (event) {
-            console.error("Speech error:", event.error);
-            stopListening();
-            if (event.error === "not-allowed") {
-                addBotMessage("🎤 Microphone access denied. Please allow microphone permissions in your browser settings.");
-            }
-        };
+    initTheme();
 
-        recognition.onend = function () {
-            stopListening();
-        };
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('hptu-theme', next);
+        });
+    }
 
-        voiceBtn.addEventListener("click", function () {
-            if (isListening) {
-                recognition.stop();
-            } else {
-                recognition.start();
+    // ═══════ MOBILE NAV ═══════
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            navContent.classList.toggle('active');
+        });
+    }
+
+    // Close nav on link click (mobile)
+    document.querySelectorAll('.nav-content a').forEach(link => {
+        link.addEventListener('click', () => {
+            navContent.classList.remove('active');
+        });
+    });
+
+    // ═══════ SCROLL REVEAL ═══════
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
             }
         });
-    } else {
-        voiceBtn.style.display = "none";
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+        revealObserver.observe(el);
+    });
+
+    // ═══════ BACK TO TOP ═══════
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 500) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+
+    if (backToTop) {
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     }
 
-    function stopListening() {
-        isListening = false;
-        voiceBtn.classList.remove("listening");
-        voiceIcon.className = "fas fa-microphone";
-        userInput.placeholder = "Ask about notices, exams, fees, syllabus...";
+    // ═══════ SMOOTH SCROLL FOR NAV ═══════
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    // ═══════ COUNTER ANIMATION ═══════
+    function animateCounter(el, target) {
+        const dur = 1200;
+        const start = 0;
+        const startTime = performance.now();
+        function update(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / dur, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.floor(eased * target);
+            if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
     }
 
-    // ─── Toggle Chat ────────────────────────────
-    function openChat() {
-        chatContainer.style.display = "flex";
-        toggleChatButton.classList.add("active");
-        chatIcon.className = "fas fa-times";
+    // ═══════ CHAT TOGGLE ═══════
+    window.openChat = function () {
+        chatContainer.style.display = 'flex';
+        chatToggle.classList.add('active');
+        chatToggle.innerHTML = '<i class="fas fa-times"></i>';
         userInput.focus();
-    }
+        chatBody.scrollTop = chatBody.scrollHeight;
+    };
 
-    function closeChat() {
-        chatContainer.style.display = "none";
-        toggleChatButton.classList.remove("active");
-        chatIcon.className = "fas fa-comments";
-    }
+    window.closeChat = function () {
+        chatContainer.style.display = 'none';
+        chatToggle.classList.remove('active');
+        chatToggle.innerHTML = '<i class="fas fa-comments"></i>';
+    };
 
-    toggleChatButton.addEventListener("click", function () {
-        if (chatContainer.style.display === "flex") {
+    window.clearChat = function () {
+        chatBody.innerHTML = '';
+        addBotMessage("Chat cleared! How can I help you?");
+    };
+
+    chatToggle.addEventListener('click', () => {
+        if (chatContainer.style.display === 'flex') {
             closeChat();
         } else {
             openChat();
         }
     });
 
-    closeChatButton.addEventListener("click", closeChat);
+    // ═══════ VOICE INPUT ═══════
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-IN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
 
-    if (heroCta) {
-        heroCta.addEventListener("click", openChat);
-    }
-
-    // ─── Mobile Nav Toggle ──────────────────────
-    if (navToggle && navContent) {
-        navToggle.addEventListener("click", function () {
-            navContent.classList.toggle("active");
-        });
-    }
-
-    // ─── PDF Upload ─────────────────────────────
-    pdfFileInput.addEventListener("change", async function () {
-        const file = pdfFileInput.files[0];
-        if (!file) return;
-
-        if (file.type !== "application/pdf") {
-            addBotMessage("⚠️ Only PDF files are allowed. Please select a .pdf file.");
-            pdfFileInput.value = "";
-            return;
-        }
-
-        pdfNameSpan.textContent = file.name;
-        pdfIndicator.classList.remove("hidden");
-        if (clearPdfBtn) clearPdfBtn.classList.remove("hidden");
-
-        const formData = new FormData();
-        formData.append("pdf", file);
-
-        addBotMessage("⏳ Uploading and processing your PDF...");
-
-        try {
-            const response = await fetch("/upload", { method: "POST", body: formData });
-            const result = await response.json();
-            if (response.ok) {
-                addBotMessage("✅ " + result.message + "\n\nYou can now ask questions about this document!");
-            } else {
-                addBotMessage("❌ " + (result.error || "Failed to upload PDF."));
-                hidePdfIndicator();
+        voiceBtn.addEventListener('click', () => {
+            if (voiceBtn.classList.contains('listening')) {
+                recognition.stop();
+                return;
             }
-        } catch (error) {
-            console.error("Upload error:", error);
-            addBotMessage("❌ Could not upload the PDF. Please check your connection.");
-            hidePdfIndicator();
-        }
-    });
+            voiceBtn.classList.add('listening');
+            recognition.start();
+        });
 
-    if (removePdfButton) removePdfButton.addEventListener("click", clearPdfContext);
-    if (clearPdfBtn) clearPdfBtn.addEventListener("click", clearPdfContext);
-
-    async function clearPdfContext() {
-        try { await fetch("/clear-pdf", { method: "POST" }); } catch (e) {}
-        hidePdfIndicator();
-        pdfFileInput.value = "";
-        addBotMessage("📄 PDF context cleared. I'll answer from real-time HPTU data now.");
-    }
-
-    function hidePdfIndicator() {
-        pdfIndicator.classList.add("hidden");
-        if (clearPdfBtn) clearPdfBtn.classList.add("hidden");
-    }
-
-    // ─── Send Message ───────────────────────────
-    async function sendMessage() {
-        const userMessage = userInput.value.trim();
-        if (!userMessage || isSending) return;
-
-        isSending = true;
-        addUserMessage(userMessage);
-        userInput.value = "";
-
-        const typingEl = showTypingIndicator();
-        chatStatus.textContent = "● Thinking...";
-        chatStatus.style.color = "#f7941d";
-
-        try {
-            const response = await fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMessage })
-            });
-
-            const data = await response.json();
-            removeTypingIndicator(typingEl);
-            chatStatus.textContent = "● Online — Real-time Data";
-            chatStatus.style.color = "#6fcf97";
-            addBotMessage(data.reply);
-        } catch (error) {
-            console.error("Chat error:", error);
-            removeTypingIndicator(typingEl);
-            chatStatus.textContent = "● Online — Real-time Data";
-            chatStatus.style.color = "#6fcf97";
-            addBotMessage("❌ Sorry, I couldn't connect. Please try again.");
-        }
-
-        isSending = false;
-    }
-
-    sendMessageButton.addEventListener("click", sendMessage);
-    userInput.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
+        recognition.addEventListener('result', (e) => {
+            const transcript = e.results[0][0].transcript;
+            userInput.value = transcript;
+            voiceBtn.classList.remove('listening');
             sendMessage();
+        });
+
+        recognition.addEventListener('end', () => {
+            voiceBtn.classList.remove('listening');
+        });
+
+        recognition.addEventListener('error', () => {
+            voiceBtn.classList.remove('listening');
+        });
+    } else {
+        voiceBtn.style.display = 'none';
+    }
+
+    // ═══════ PDF UPLOAD ═══════
+    pdfUpload.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file && file.type === 'application/pdf') {
+            uploadedPdf = file;
+            pdfFileName.textContent = file.name;
+            pdfIndicator.classList.remove('hidden');
         }
     });
 
-    // ─── Message Helpers ────────────────────────
-    function addUserMessage(message) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "user-message";
-        const bubble = document.createElement("div");
-        bubble.className = "user-bubble";
-        bubble.textContent = message;
-        wrapper.appendChild(bubble);
-        chatBody.appendChild(wrapper);
+    window.removePdf = function () {
+        uploadedPdf = null;
+        pdfUpload.value = '';
+        pdfIndicator.classList.add('hidden');
+    };
+
+    // ═══════ SEND MESSAGE ═══════
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    function sendMessage() {
+        const text = userInput.value.trim();
+        if (!text && !uploadedPdf) return;
+
+        addUserMessage(text || 'Uploaded a PDF for analysis');
+        userInput.value = '';
+        showTypingIndicator();
+
+        if (uploadedPdf) {
+            const formData = new FormData();
+            formData.append('pdf', uploadedPdf);
+            if (text) formData.append('question', text);
+
+            fetch('/api/upload-pdf', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    removeTypingIndicator();
+                    addBotMessage(data.response || data.error || 'Could not process the PDF.');
+                })
+                .catch(() => {
+                    removeTypingIndicator();
+                    addBotMessage('Sorry, there was an error processing your PDF.');
+                });
+
+            removePdf();
+        } else {
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    removeTypingIndicator();
+                    addBotMessage(data.response || 'Sorry, I could not process your request.');
+                })
+                .catch(() => {
+                    removeTypingIndicator();
+                    addBotMessage('Sorry, there was a connection error. Please try again.');
+                });
+        }
+    }
+
+    // ═══════ MESSAGE HELPERS ═══════
+    function addUserMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'user-message';
+        div.innerHTML = '<div class="user-bubble">' + escapeHtml(text) + '</div>';
+        chatBody.appendChild(div);
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function formatBotMessage(text) {
-        // Escape HTML first to prevent XSS
-        let msg = text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-
-        // Markdown links: [text](url)
-        msg = msg.replace(
-            /\[([^\]]+)\]\(((https?:\/\/)[^\s)]+)\)/g,
-            '<a href="$2" target="_blank" rel="noopener noreferrer">$1 <i class="fas fa-external-link-alt"></i></a>'
-        );
-
-        // Angle-bracket links: <url>
-        msg = msg.replace(
-            /&lt;(https?:\/\/[^\s&]+)&gt;/g,
-            '<a href="$1" target="_blank" rel="noopener noreferrer">$1 <i class="fas fa-external-link-alt"></i></a>'
-        );
-
-        // Bare URLs that are NOT already inside an href="..."
-        msg = msg.replace(
-            /(?<!["=])(https?:\/\/[^\s<"'\)]+)/g,
-            '<a href="$1" target="_blank" rel="noopener noreferrer">$1 <i class="fas fa-external-link-alt"></i></a>'
-        );
-
-        // Bold: **text** or __text__
-        msg = msg.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-        msg = msg.replace(/__(.+?)__/g, "<strong>$1</strong>");
-
-        // Italic: *text* or _text_ (not inside words)
-        msg = msg.replace(/(?<![\w])\*([^*]+?)\*(?![\w])/g, "<em>$1</em>");
-
-        // Headings: ### text
-        msg = msg.replace(/^### (.+)$/gm, '<strong class="chat-heading">$1</strong>');
-        msg = msg.replace(/^## (.+)$/gm, '<strong class="chat-heading">$1</strong>');
-
-        // Bullet lists: lines starting with - or •
-        msg = msg.replace(/^[\-•] (.+)$/gm, '&bull; $1');
-
-        // Numbered lists: 1. text
-        msg = msg.replace(/^(\d+)\. (.+)$/gm, '<strong>$1.</strong> $2');
-
-        // Horizontal separators: --- or ═══
-        msg = msg.replace(/^[-═]{3,}$/gm, '<hr class="chat-divider">');
-
-        // Newlines to <br>
-        msg = msg.replace(/\n/g, "<br>");
-
-        return msg;
-    }
-
-    function addBotMessage(message) {
-        const wrapper = document.createElement("div");
-        wrapper.className = "bot-message";
-        const avatar = document.createElement("div");
-        avatar.className = "msg-avatar";
-        avatar.innerHTML = '<img src="/static/images/hptu-logo.png" alt="HPTU">';
-        const bubble = document.createElement("div");
-        bubble.className = "msg-bubble";
-        bubble.innerHTML = formatBotMessage(message);
-        wrapper.appendChild(avatar);
-        wrapper.appendChild(bubble);
-        chatBody.appendChild(wrapper);
+    function addBotMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'bot-message';
+        div.innerHTML =
+            '<div class="msg-avatar"><img src="/static/hptu-logo.png" alt="HPTU"></div>' +
+            '<div class="msg-bubble">' + formatBotMessage(text) + '</div>';
+        chatBody.appendChild(div);
         chatBody.scrollTop = chatBody.scrollHeight;
     }
 
     function showTypingIndicator() {
-        const wrapper = document.createElement("div");
-        wrapper.className = "typing-indicator";
-        const avatar = document.createElement("div");
-        avatar.className = "msg-avatar";
-        avatar.innerHTML = '<img src="/static/images/hptu-logo.png" alt="HPTU">';
-        const dots = document.createElement("div");
-        dots.className = "typing-dots";
-        dots.innerHTML = "<span></span><span></span><span></span>";
-        wrapper.appendChild(avatar);
-        wrapper.appendChild(dots);
-        chatBody.appendChild(wrapper);
+        const div = document.createElement('div');
+        div.className = 'typing-indicator';
+        div.id = 'typingIndicator';
+        div.innerHTML =
+            '<div class="msg-avatar"><img src="/static/hptu-logo.png" alt="HPTU"></div>' +
+            '<div class="typing-dots"><span></span><span></span><span></span></div>';
+        chatBody.appendChild(div);
         chatBody.scrollTop = chatBody.scrollHeight;
-        return wrapper;
     }
 
-    function removeTypingIndicator(el) {
-        if (el && el.parentNode) el.parentNode.removeChild(el);
+    function removeTypingIndicator() {
+        const ti = document.getElementById('typingIndicator');
+        if (ti) ti.remove();
     }
 
-    // ─── Load Scraper Status ────────────────────
-    async function loadScraperStatus() {
-        try {
-            const response = await fetch("/api/scraper-status");
-            const data = await response.json();
-            var el;
-
-            el = document.getElementById("stat-notices");
-            if (el) el.textContent = data.notices_count || "0";
-
-            el = document.getElementById("stat-pdfs");
-            if (el) el.textContent = data.pdfs_scanned || "0";
-
-            el = document.getElementById("stat-syllabus");
-            if (el) el.textContent = data.syllabus_count || "0";
-
-            el = document.getElementById("stat-updated");
-            if (el) el.textContent = data.last_run || "Never";
-
-            // Update badge
-            var badge = document.getElementById("auto-update-badge");
-            if (badge) {
-                if (data.status === "success") {
-                    badge.innerHTML = '<i class="fas fa-check-circle"></i> Data synced';
-                    badge.style.color = "#6fcf97";
-                } else if (data.status === "running") {
-                    badge.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Updating...';
-                    badge.style.color = "#f7941d";
-                }
-            }
-        } catch (e) {
-            console.error("Status load error:", e);
-        }
+    function escapeHtml(text) {
+        const el = document.createElement('div');
+        el.textContent = text;
+        return el.innerHTML;
     }
 
-    // ─── Load Notices ───────────────────────────
-    async function loadNotices() {
-        try {
-            const response = await fetch("/api/notices");
-            const data = await response.json();
-            const noticesList = document.getElementById("notices-list");
-            if (!noticesList) return;
+    // ═══════ BOT MESSAGE FORMATTER ═══════
+    function formatBotMessage(text) {
+        if (!text) return '';
 
-            noticesList.innerHTML = "";
-            const entries = Object.values(data);
-            if (entries.length === 0) {
-                noticesList.innerHTML = '<div class="notice-item"><div class="notice-icon"><i class="fas fa-info-circle"></i></div><div class="notice-content"><strong>No announcements at the moment.</strong></div></div>';
-                return;
-            }
+        // Escape HTML first
+        let formatted = escapeHtml(text);
 
-            entries.forEach(function (notice) {
-                const item = document.createElement("div");
-                item.className = "notice-item";
-                item.innerHTML =
-                    '<div class="notice-icon"><i class="fas fa-bell"></i></div>' +
-                    '<div class="notice-content">' +
-                    "<strong>" + (notice.title || "Notice") + "</strong>" +
-                    "<p>" + (notice.date || "") + (notice.description ? " — " + notice.description : "") + "</p>" +
-                    "</div>";
-                noticesList.appendChild(item);
+        // Headings (### > ## > #)
+        formatted = formatted.replace(/^### (.+)$/gm, '<strong class="chat-heading" style="font-size:13px;">$1</strong>');
+        formatted = formatted.replace(/^## (.+)$/gm, '<strong class="chat-heading">$1</strong>');
+        formatted = formatted.replace(/^# (.+)$/gm, '<strong class="chat-heading" style="font-size:15px;">$1</strong>');
+
+        // Horizontal rules
+        formatted = formatted.replace(/^---$/gm, '<hr class="chat-divider">');
+
+        // Bold
+        formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+        // Italic
+        formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+        // Links — URLs
+        formatted = formatted.replace(
+            /(?<!\()((https?:\/\/)[^\s<]+)/g,
+            '<a href="$1" target="_blank" rel="noopener noreferrer">$1 <i class="fas fa-external-link-alt"></i></a>'
+        );
+
+        // Numbered lists
+        formatted = formatted.replace(/^\d+\.\s+(.+)$/gm, '<span style="display:block;padding-left:16px;margin:2px 0;">• $1</span>');
+
+        // Bullet lists
+        formatted = formatted.replace(/^[-*]\s+(.+)$/gm, '<span style="display:block;padding-left:16px;margin:2px 0;">• $1</span>');
+
+        // Line breaks
+        formatted = formatted.replace(/\n/g, '<br>');
+
+        return formatted;
+    }
+
+    // ═══════ LOAD NOTICES ═══════
+    function loadHptuNotices() {
+        fetch('/api/hptu-notices')
+            .then(r => r.json())
+            .then(data => {
+                const notices = data.notices || [];
+                window.hptuNoticesData = notices;
+                document.getElementById('statNotices').textContent = notices.length;
+                animateCounter(document.getElementById('statNotices'), notices.length);
+                renderHptuNotices('all');
+            })
+            .catch(() => {
+                document.getElementById('hptuNoticesList').innerHTML =
+                    '<div class="empty-placeholder"><i class="fas fa-exclamation-circle"></i><p>Could not load notices</p></div>';
             });
-        } catch (e) {
-            console.error("Failed to load notices:", e);
-        }
-    }
-
-    // ─── Load HPTU Official Notices ─────────────
-    var allHptuNotices = [];
-
-    async function loadHptuNotices() {
-        var hptuList = document.getElementById("hptu-notices-list");
-        if (!hptuList) return;
-
-        try {
-            var response = await fetch("/api/hptu-notices");
-            var data = await response.json();
-            allHptuNotices = data || [];
-            renderHptuNotices("all");
-        } catch (e) {
-            console.error("Failed to load HPTU notices:", e);
-            hptuList.innerHTML =
-                '<div class="notice-item">' +
-                '<div class="notice-icon"><i class="fas fa-exclamation-triangle" style="color:#c0392b;"></i></div>' +
-                '<div class="notice-content"><strong>Could not load notifications.</strong><p>Please check back later.</p></div>' +
-                '</div>';
-        }
     }
 
     function renderHptuNotices(filter) {
-        var hptuList = document.getElementById("hptu-notices-list");
-        if (!hptuList) return;
+        const container = document.getElementById('hptuNoticesList');
+        const notices = window.hptuNoticesData || [];
 
-        hptuList.innerHTML = "";
-
-        var filtered = allHptuNotices;
-        if (filter && filter !== "all") {
-            filtered = allHptuNotices.filter(function(n) {
-                return (n.category || "general") === filter;
+        let filtered = notices;
+        if (filter && filter !== 'all') {
+            filtered = notices.filter(n => {
+                const title = (n.title || '').toLowerCase();
+                const cat = (n.category || '').toLowerCase();
+                return title.includes(filter) || cat.includes(filter);
             });
         }
 
         if (filtered.length === 0) {
-            hptuList.innerHTML =
-                '<div class="notice-item">' +
-                '<div class="notice-icon"><i class="fas fa-info-circle"></i></div>' +
-                '<div class="notice-content"><strong>No notifications found for this category.</strong></div>' +
-                '</div>';
+            container.innerHTML = '<div class="empty-placeholder"><i class="fas fa-inbox"></i><p>No notices found</p></div>';
             return;
         }
 
-        filtered.forEach(function (notice) {
-            var item = document.createElement("div");
-            item.className = "notice-item";
-            item.setAttribute("data-category", notice.category || "general");
+        container.innerHTML = filtered.slice(0, 20).map(n => {
+            const category = n.category || 'general';
+            const badgeClass = 'badge-' + category.toLowerCase().replace(/\s+/g, '-');
+            const date = n.date || '';
+            const link = n.link || '#';
+            const title = n.title || 'Untitled Notice';
+            const aiTag = n.ai_categorized
+                ? '<span class="ai-scanned-badge"><i class="fas fa-brain"></i> AI</span>'
+                : '';
 
-            var categoryBadge = "";
-            var catColors = {
-                examination: "#c0392b",
-                admission: "#27ae60",
-                fees: "#d4a200",
-                syllabus: "#7c3aed",
-                recruitment: "#e67e22",
-                general: "#2f3e9e"
-            };
-            var cat = notice.category || "general";
-            categoryBadge = '<span style="background:' + (catColors[cat] || "#2f3e9e") +
-                '; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; margin-left:8px;">' +
-                cat.charAt(0).toUpperCase() + cat.slice(1) + '</span>';
-
-            var linkHtml = "";
-            if (notice.link) {
-                linkHtml = ' <a href="' + notice.link + '" target="_blank" rel="noopener" style="color:#2f3e9e; font-weight:600; font-size:12px;"><i class="fas fa-external-link-alt"></i> View</a>';
-            }
-
-            var pdfBadge = "";
-            if (notice.pdf_text) {
-                pdfBadge = ' <span style="background:#e6f7ef; color:#27ae60; padding:2px 6px; border-radius:8px; font-size:10px;"><i class="fas fa-check"></i> AI Scanned</span>';
-            }
-
-            item.innerHTML =
-                '<div class="notice-icon"><i class="fas fa-globe" style="color:#2f3e9e;"></i></div>' +
+            return '<div class="notice-item">' +
+                '<div class="notice-icon"><i class="fas fa-file-alt"></i></div>' +
                 '<div class="notice-content">' +
-                "<strong>" + (notice.title || "Notification") + "</strong>" + categoryBadge + pdfBadge +
-                "<p>" + (notice.date || "") +
-                (notice.last_date ? " | Deadline: " + notice.last_date : "") +
-                linkHtml + "</p>" +
-                "</div>";
-            hptuList.appendChild(item);
-        });
-
-        // View all link
-        if (allHptuNotices.length > 0) {
-            var viewAll = document.createElement("div");
-            viewAll.className = "notice-item";
-            viewAll.innerHTML =
-                '<div class="notice-icon"><i class="fas fa-arrow-right" style="color:#f7941d;"></i></div>' +
-                '<div class="notice-content">' +
-                '<a href="https://www.himtu.ac.in/notice-board" target="_blank" rel="noopener" style="color:#2f3e9e; font-weight:700;">View all notifications on HPTU website →</a>' +
-                '</div>';
-            hptuList.appendChild(viewAll);
-        }
+                '<strong>' + escapeHtml(title) +
+                '<span class="notice-category-badge ' + badgeClass + '">' + escapeHtml(category) + '</span>' +
+                aiTag + '</strong>' +
+                '<p><i class="fas fa-calendar-alt" style="margin-right:4px;"></i>' + escapeHtml(date) +
+                (link !== '#' ? ' &mdash; <a href="' + encodeURI(link) + '" target="_blank" rel="noopener noreferrer">View <i class="fas fa-external-link-alt" style="font-size:9px;"></i></a>' : '') +
+                '</p></div></div>';
+        }).join('');
     }
 
-    // ─── Notice Filter Tabs ─────────────────────
-    document.querySelectorAll(".filter-btn").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-            document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
-            this.classList.add("active");
-            renderHptuNotices(this.getAttribute("data-filter"));
+    function loadNotices() {
+        fetch('/api/notices')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('noticesList');
+                const notices = data.notices || [];
+
+                if (notices.length === 0) {
+                    container.innerHTML = '<div class="empty-placeholder"><i class="fas fa-inbox"></i><p>No announcements yet</p></div>';
+                    return;
+                }
+
+                container.innerHTML = notices.map(n => {
+                    return '<div class="notice-item">' +
+                        '<div class="notice-icon"><i class="fas fa-bullhorn"></i></div>' +
+                        '<div class="notice-content">' +
+                        '<strong>' + escapeHtml(n.title || 'Announcement') + '</strong>' +
+                        '<p>' + escapeHtml(n.content || '') + '</p>' +
+                        '</div></div>';
+                }).join('');
+            })
+            .catch(() => {
+                document.getElementById('noticesList').innerHTML =
+                    '<div class="empty-placeholder"><i class="fas fa-exclamation-circle"></i><p>Could not load announcements</p></div>';
+            });
+    }
+
+    // ═══════ NOTICE FILTERS ═══════
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            renderHptuNotices(this.getAttribute('data-filter'));
         });
     });
 
-    // ─── Load Syllabus ──────────────────────────
-    async function loadSyllabus() {
-        var syllabusList = document.getElementById("syllabus-list");
-        if (!syllabusList) return;
+    // ═══════ LOAD SYLLABUS ═══════
+    function loadSyllabus() {
+        fetch('/api/syllabus')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('syllabusGrid');
+                const items = data.syllabus || [];
 
-        try {
-            var response = await fetch("/api/syllabus");
-            var data = await response.json();
+                animateCounter(document.getElementById('statSyllabus'), items.length);
 
-            syllabusList.innerHTML = "";
-
-            if (!data || data.length === 0) {
-                syllabusList.innerHTML =
-                    '<div class="syllabus-item empty-placeholder">' +
-                    '<i class="fas fa-book" style="font-size:32px; color:#ccc; margin-bottom:10px;"></i>' +
-                    '<p style="color:#888;">Syllabus data will appear here after auto-scraping from HPTU website.</p>' +
-                    '<p style="color:#aaa; font-size:12px;">Visit <a href="https://www.himtu.ac.in" target="_blank" style="color:#2f3e9e;">himtu.ac.in</a> for the latest syllabus.</p>' +
-                    '</div>';
-                return;
-            }
-
-            data.forEach(function(item) {
-                var card = document.createElement("div");
-                card.className = "syllabus-card";
-
-                var linkHtml = "";
-                if (item.link) {
-                    linkHtml = '<a href="' + item.link + '" target="_blank" rel="noopener" class="syllabus-download"><i class="fas fa-download"></i> Download</a>';
+                if (items.length === 0) {
+                    container.innerHTML = '<div class="empty-placeholder"><i class="fas fa-book-open"></i><p>No syllabus data</p></div>';
+                    return;
                 }
 
-                card.innerHTML =
-                    '<div class="syllabus-icon"><i class="fas fa-book"></i></div>' +
-                    '<div class="syllabus-info">' +
-                    '<h4>' + (item.title || "Syllabus") + '</h4>' +
-                    '<span class="syllabus-program">' + (item.program || "General") + '</span>' +
-                    linkHtml +
-                    '</div>';
-                syllabusList.appendChild(card);
+                container.innerHTML = items.map(s => {
+                    const title = s.title || s.name || 'Syllabus Document';
+                    const program = s.program || '';
+                    const link = s.link || s.url || '#';
+
+                    return '<div class="syllabus-card">' +
+                        '<div class="syllabus-icon"><i class="fas fa-book"></i></div>' +
+                        '<div class="syllabus-info">' +
+                        '<h4>' + escapeHtml(title) + '</h4>' +
+                        (program ? '<span class="syllabus-program">' + escapeHtml(program) + '</span>' : '') +
+                        (link !== '#' ? '<a class="syllabus-download" href="' + encodeURI(link) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Download</a>' : '') +
+                        '</div></div>';
+                }).join('');
+            })
+            .catch(() => {
+                document.getElementById('syllabusGrid').innerHTML =
+                    '<div class="empty-placeholder"><i class="fas fa-exclamation-circle"></i><p>Could not load syllabus</p></div>';
             });
-        } catch (e) {
-            console.error("Failed to load syllabus:", e);
-        }
     }
 
-    // ─── Load Fees ──────────────────────────────
-    async function loadFees() {
-        var feesList = document.getElementById("fees-list");
-        if (!feesList) return;
+    // ═══════ LOAD FEES ═══════
+    function loadFees() {
+        fetch('/api/fees')
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('feesContainer');
+                const items = data.fees || [];
 
-        try {
-            var response = await fetch("/api/fees");
-            var data = await response.json();
-
-            feesList.innerHTML = "";
-
-            if (!data || data.length === 0) {
-                feesList.innerHTML =
-                    '<div class="fee-item empty-placeholder">' +
-                    '<i class="fas fa-rupee-sign" style="font-size:32px; color:#ccc; margin-bottom:10px;"></i>' +
-                    '<p style="color:#888;">Fee structure data will appear here after auto-scraping from HPTU website.</p>' +
-                    '<p style="color:#aaa; font-size:12px;">Visit <a href="https://www.himtu.ac.in" target="_blank" style="color:#2f3e9e;">himtu.ac.in</a> for current fee details.</p>' +
-                    '</div>';
-                return;
-            }
-
-            data.forEach(function(item) {
-                var card = document.createElement("div");
-                card.className = "fee-card";
-
-                var content = "";
-                if (item.description) {
-                    content = '<p>' + item.description + '</p>';
-                } else if (item.title) {
-                    content = '<h4>' + item.title + '</h4>';
-                    if (item.link) {
-                        content += '<a href="' + item.link + '" target="_blank" rel="noopener" style="color:#2f3e9e; font-size:12px;"><i class="fas fa-external-link-alt"></i> View Details</a>';
-                    }
+                if (items.length === 0) {
+                    container.innerHTML = '<div class="empty-placeholder"><i class="fas fa-rupee-sign"></i><p>No fee data</p></div>';
+                    return;
                 }
 
-                card.innerHTML =
-                    '<div class="fee-icon"><i class="fas fa-rupee-sign"></i></div>' +
-                    '<div class="fee-info">' + content + '</div>';
-                feesList.appendChild(card);
+                container.innerHTML = items.map(f => {
+                    const title = f.title || f.name || 'Fee Document';
+                    const amount = f.amount || '';
+                    const link = f.link || f.url || '#';
+                    const desc = f.description || '';
+
+                    return '<div class="fee-card">' +
+                        '<div class="fee-icon"><i class="fas fa-rupee-sign"></i></div>' +
+                        '<div class="fee-info">' +
+                        '<h4>' + escapeHtml(title) + '</h4>' +
+                        (desc ? '<p>' + escapeHtml(desc) + '</p>' : '') +
+                        (amount ? '<span class="fee-amount">' + escapeHtml(amount) + '</span>' : '') +
+                        (link !== '#' ? '<a class="fee-download" href="' + encodeURI(link) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-download"></i> Download</a>' : '') +
+                        '</div></div>';
+                }).join('');
+            })
+            .catch(() => {
+                document.getElementById('feesContainer').innerHTML =
+                    '<div class="empty-placeholder"><i class="fas fa-exclamation-circle"></i><p>Could not load fee data</p></div>';
             });
-        } catch (e) {
-            console.error("Failed to load fees:", e);
-        }
     }
 
-    // ─── Initialize all data loads ──────────────
+    // ═══════ LOAD SCRAPER STATUS ═══════
+    function loadScraperStatus() {
+        fetch('/api/scraper/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.total_pdfs) {
+                    animateCounter(document.getElementById('statPdfs'), data.total_pdfs);
+                }
+                if (data.last_run) {
+                    const d = new Date(data.last_run);
+                    document.getElementById('statUpdated').textContent = d.toLocaleDateString('en-IN', {
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+                    });
+                }
+            })
+            .catch(() => {});
+    }
+
+    // ═══════ INIT ═══════
     loadHptuNotices();
     loadNotices();
     loadSyllabus();
     loadFees();
     loadScraperStatus();
 
-    // Auto-refresh data every 5 minutes
-    setInterval(function() {
+    // Auto-refresh every 5 minutes
+    setInterval(() => {
         loadHptuNotices();
+        loadNotices();
         loadScraperStatus();
     }, 300000);
-
-    // ─── Smooth Scroll ──────────────────────────
-    document.querySelectorAll('nav a[href^="#"]').forEach(function (link) {
-        link.addEventListener("click", function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute("href"));
-            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
-            if (navContent) navContent.classList.remove("active");
-        });
-    });
 });
