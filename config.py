@@ -27,8 +27,8 @@ class Config:
     MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "hptu_assistant")
 
     # Admin credentials (hashed)
-    ADMIN_USERNAME = "admin"
-    ADMIN_PASSWORD_HASH = generate_password_hash("kunal123")
+    ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
+    ADMIN_PASSWORD_HASH = generate_password_hash(os.getenv("ADMIN_PASSWORD", "kunal123"))
 
     # Brute-force protection
     MAX_LOGIN_ATTEMPTS = 5
