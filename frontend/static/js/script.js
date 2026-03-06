@@ -217,11 +217,11 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('pdf', uploadedPdf);
             if (text) formData.append('question', text);
 
-            fetch('/api/upload-pdf', { method: 'POST', body: formData })
+            fetch('/upload', { method: 'POST', body: formData })
                 .then(r => r.json())
                 .then(data => {
                     removeTypingIndicator();
-                    addBotMessage(data.response || data.error || 'Could not process the PDF.');
+                    addBotMessage(data.message || data.error || 'Could not process the PDF.');
                 })
                 .catch(() => {
                     removeTypingIndicator();
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             removePdf();
         } else {
-            fetch('/api/chat', {
+            fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: text })
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(r => r.json())
                 .then(data => {
                     removeTypingIndicator();
-                    addBotMessage(data.response || 'Sorry, I could not process your request.');
+                    addBotMessage(data.reply || 'Sorry, I could not process your request.');
                 })
                 .catch(() => {
                     removeTypingIndicator();
@@ -492,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ═══════ LOAD SCRAPER STATUS ═══════
     function loadScraperStatus() {
-        fetch('/api/scraper/status')
+        fetch('/api/scraper-status')
             .then(r => r.json())
             .then(data => {
                 if (data.total_pdfs) {
