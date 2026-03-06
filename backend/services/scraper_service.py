@@ -467,7 +467,7 @@ def scan_pdf_notices(notices, max_pdfs=20):
 def run_full_scrape():
     """Run a comprehensive scrape of all HPTU data and store in MongoDB."""
     from backend.services.notice_service import (
-        save_hptu_notices, save_syllabus, save_fees, save_scraper_status, save_documents
+        save_hptu_notices, save_syllabus, save_fees, save_scraper_status, save_documents, save_pyq
     )
 
     status = {
@@ -479,6 +479,7 @@ def run_full_scrape():
         "syllabus_count": 0,
         "fees_count": 0,
         "documents_count": 0,
+        "pyq_count": 0,
     }
 
     try:
@@ -516,9 +517,18 @@ def run_full_scrape():
         if documents:
             save_documents(documents)
 
+        # 7. Scrape PYQ from hptuonline.com
+        print("📝 Scraping Previous Year Questions (PYQ)...")
+        from backend.services.pyq_service import scrape_all_pyq
+        pyq_papers = scrape_all_pyq()
+        status["pyq_count"] = len(pyq_papers)
+        if pyq_papers:
+            save_pyq(pyq_papers)
+
         status["status"] = "success"
         print(f"✅ Full scrape complete: {len(notices)} notices, {pdf_count} PDFs, "
-              f"{len(syllabus)} syllabus, {len(fees)} fees, {len(documents)} documents")
+              f"{len(syllabus)} syllabus, {len(fees)} fees, {len(documents)} documents, "
+              f"{len(pyq_papers)} PYQ papers")
 
     except Exception as e:
         status["status"] = "error"

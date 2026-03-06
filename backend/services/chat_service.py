@@ -1,261 +1,247 @@
 """
-Chat Service — Cohere AI chatbot with real-time HPTU data knowledge
-Pulls latest notices, PDFs, syllabus, fees, documents from MongoDB to answer queries.
-Always provides direct PDF/document links when users ask for any document.
+Chat Service — Fast AI chatbot with smart context loading
+Only loads relevant data based on user query. Caches context. Uses faster model.
 """
+import time
 from datetime import datetime
 
-# In-memory chat logs (also persisted to MongoDB)
+# In-memory chat logs
 chat_logs = []
 
-# Base system prompt
+# ── In-memory cache to avoid repeated MongoDB reads ──
+_context_cache = {
+    "notices": None,
+    "documents": None,
+    "pyq": None,
+    "syllabus": None,
+    "fees": None,
+    "pdfs": None,
+    "uni_notices": None,
+    "last_refresh": 0,
+}
+CACHE_TTL = 300  # Refresh cache every 5 minutes
+
+# Base system prompt (compact — no bloated data)
 HPTU_SYSTEM_PROMPT = """You are the official AI Assistant for Himachal Pradesh Technical University (HPTU), Hamirpur.
-You help students, faculty, and visitors with university-related queries.
+You were created by **Kunal Chauhan**, a B.Tech CSE student at HPTU, as a capstone project.
 
-ABOUT YOUR CREATOR:
-- You were created and developed by **Kunal Chauhan**, a B.Tech Computer Science & Engineering (CSE) student at HPTU.
-- When anyone asks "who made you", "who created you", "who built you", "who is your developer",
-  "who designed you", or any similar question about your origin/creator, you MUST answer:
-  "I was created by **Kunal Chauhan**, a B.Tech CSE student at Himachal Pradesh Technical University (HPTU), Hamirpur.
-  He developed me as a capstone project to help students, faculty, and visitors get real-time information about HPTU."
-- Always credit Kunal Chauhan proudly and mention he is a B.Tech CSE student at HPTU.
-
-KEY FACTS ABOUT HPTU:
+KEY FACTS:
 - Full Name: Himachal Pradesh Technical University (HPTU)
-- Location: Daruhi, Hamirpur, Himachal Pradesh, India - 177001
-- Established: 2010 under HP Technical University Act
-- Type: State Technical University
+- Location: Daruhi, Hamirpur, Himachal Pradesh - 177001
+- Established: 2010 | Type: State Technical University
 - Website: www.himtu.ac.in
-- Chancellor: Governor of Himachal Pradesh
 - Vice Chancellor: Dr. Abhishek Jain (IAS)
-- Affiliation: Affiliates engineering, pharmacy, management, and other technical colleges across HP
-
-ACADEMICS:
-- Offers B.Tech, M.Tech, BBA, MBA, BCA, MCA, B.Pharmacy, M.Pharmacy, B.Arch, Diploma, Ph.D programs
+- Programs: B.Tech, M.Tech, BBA, MBA, BCA, MCA, B.Pharmacy, M.Pharmacy, Diploma, Ph.D
 - Branches: CSE, ECE, EE, ME, CE, IT, and more
-- Semester system with university-conducted exams
+- Admissions: B.Tech via HPCET/JEE Main | MBA via HPCET/MAT/CMAT | M.Tech via GATE/HPCET
 
-ADMISSIONS:
-- B.Tech: HPCET / JEE Main
-- MBA: HPCET / MAT / CMAT
-- M.Tech: GATE / HPCET
-- Lateral entry for diploma holders
-
-IMPORTANT PORTALS & LINKS:
-- Official Website: https://www.himtu.ac.in
-- Examination Portal (Admit Cards & Forms): https://hptuexam.com/
-- Results Portal: https://himachal-pradesh.indiaresults.com/himtu/default.aspx
-- Online Fee Payment (SBI Collect): https://onlinesbi.sbi.bank.in/sbicollect/icollecthome.htm?corpID=2471557
+IMPORTANT LINKS:
+- Official: https://www.himtu.ac.in
+- Exam Portal: https://hptuexam.com/
+- Results: https://himachal-pradesh.indiaresults.com/himtu/default.aspx
+- Fee Payment: https://onlinesbi.sbi.bank.in/sbicollect/icollecthome.htm?corpID=2471557
 - Notice Board: https://www.himtu.ac.in/notice-board
-- Examination Schedule / Date Sheets: https://www.himtu.ac.in/en/examination/examination-schedule
-- Student Forms (Download): https://www.himtu.ac.in/en/student-zone/forms
-- DigiLocker (Certificates): https://nad.digilocker.gov.in/
-- Admissions Page: https://www.himtu.ac.in/en/admissions
-- Student Zone: https://www.himtu.ac.in/en/student-zone
+- Date Sheets: https://www.himtu.ac.in/en/examination/examination-schedule
+- Forms: https://www.himtu.ac.in/en/student-zone/forms
+- Admissions: https://www.himtu.ac.in/en/admissions
+- PYQ Papers: https://www.hptuonline.com/
 
-CONTACTS:
-- Address: Daruhi, Hamirpur, HP - 177001
-- Registrar Office: 01972-226902
-- Examination/Degree queries: 01972-226912, 01972-226908, 01972-226910, 01972-226999
-- Email: registrarhimtu@gmail.com
+CONTACTS: Registrar: 01972-226902 | Exam: 01972-226912 | Email: registrarhimtu@gmail.com
 
-═══════════════════════════════════════════════════════
-CRITICAL RESPONSE RULES — YOU MUST FOLLOW THESE:
-═══════════════════════════════════════════════════════
-
-1. **ALWAYS PROVIDE DIRECT LINKS**: When a user asks for ANY document (academic calendar, date sheet,
-   syllabus, fee notice, admit card, result, form, circular, notification, PDF, etc.),
-   you MUST provide the direct download link or URL from the REAL-TIME DATA below.
-   NEVER say "check the website" without giving the actual link.
-
-2. **LINK FORMAT**: Always provide clickable links. Format like:
-   📄 Document Name: <link>
-   If multiple documents match, list ALL of them with their links.
-
-3. **SEARCH THOROUGHLY**: Search through ALL the data sections below — NOTIFICATIONS, DOCUMENTS,
-   SYLLABUS, FEES, and SCRAPED PDFs — to find relevant links for the user's query.
-   A user asking for "academic calendar" might find it in notices OR documents.
-
-4. **PDF CONTENT KNOWLEDGE**: You have access to extracted text from PDFs. Use this knowledge
-   to answer specific questions about what's INSIDE documents (dates, schedules, rules, etc.)
-
-5. **FALLBACK LINKS**: If you cannot find the exact document, provide the most relevant portal link:
-   - For date sheets/exams → https://www.himtu.ac.in/en/examination/examination-schedule
-   - For results → https://himachal-pradesh.indiaresults.com/himtu/default.aspx
-   - For admit cards → https://hptuexam.com/
-   - For fee payment → https://onlinesbi.sbi.bank.in/sbicollect/icollecthome.htm?corpID=2471557
-   - For forms → https://www.himtu.ac.in/en/student-zone/forms
-   - For all notices → https://www.himtu.ac.in/notice-board
-   - For admissions → https://www.himtu.ac.in/en/admissions
-
-6. **BE SPECIFIC**: Don't give vague answers. If user asks "where can I download B.Tech date sheet?",
-   find the exact PDF link from the data and share it.
-
-7. **MULTIPLE MATCHES**: If multiple documents match the query, list them ALL with dates so the
-   user can pick the right one.
-
-GENERAL RESPONSE GUIDELINES:
-- Be helpful, accurate, and professional
-- Format responses clearly with bullet points when listing information
-- Keep responses concise but informative
-- Always be polite and supportive to students
-- If you truly don't have a specific document, say so honestly and give the portal link where they can find it"""
+RESPONSE RULES:
+1. Reply naturally like a helpful AI — be concise, friendly, and to the point.
+2. When asked for documents/papers, provide DIRECT LINKS from the data below.
+3. For PYQ/question papers, give direct hptuonline.com links.
+4. Keep answers short unless the user asks for detailed info.
+5. Use bullet points and emojis for readability.
+6. If you don't have specific data, give the relevant portal link.
+7. For general knowledge questions (not HPTU-specific), answer directly from your knowledge.
+8. When asked "who made you" or "who created you", credit **Kunal Chauhan** (B.Tech CSE, HPTU)."""
 
 
-def _build_realtime_context():
-    """Build real-time context from MongoDB data for the AI chatbot."""
-    from backend.services.notice_service import (
-        load_hptu_notices, load_notices, load_syllabus, load_fees,
-        load_scraped_pdfs, load_documents
-    )
+def _refresh_cache():
+    """Refresh the in-memory cache from MongoDB (runs max once per CACHE_TTL)."""
+    now = time.time()
+    if now - _context_cache["last_refresh"] < CACHE_TTL:
+        return  # Cache is still fresh
 
+    try:
+        from backend.services.notice_service import (
+            load_hptu_notices, load_notices, load_syllabus, load_fees,
+            load_scraped_pdfs, load_documents, load_pyq
+        )
+        _context_cache["notices"] = load_hptu_notices() or []
+        _context_cache["documents"] = load_documents() or []
+        _context_cache["pyq"] = load_pyq() or []
+        _context_cache["syllabus"] = load_syllabus() or []
+        _context_cache["fees"] = load_fees() or []
+        _context_cache["pdfs"] = load_scraped_pdfs() or []
+        _context_cache["uni_notices"] = load_notices() or {}
+        _context_cache["last_refresh"] = now
+    except Exception as e:
+        print(f"Cache refresh error: {e}")
+
+
+def _detect_query_topics(user_msg):
+    """Detect what topics the user is asking about to load only relevant data."""
+    msg = user_msg.lower()
+    topics = set()
+
+    # PYQ / Question papers
+    if any(w in msg for w in ["pyq", "question paper", "previous year", "old paper",
+                               "sample paper", "model paper", "past paper", "exam paper"]):
+        topics.add("pyq")
+
+    # Notices
+    if any(w in msg for w in ["notice", "notification", "circular", "announcement", "latest update"]):
+        topics.add("notices")
+
+    # Results
+    if any(w in msg for w in ["result", "marks", "grade", "marksheet", "cgpa", "sgpa"]):
+        topics.add("notices")
+        topics.add("documents")
+
+    # Date sheet / Exam
+    if any(w in msg for w in ["date sheet", "datesheet", "exam schedule", "examination"]):
+        topics.add("documents")
+        topics.add("notices")
+
+    # Syllabus
+    if any(w in msg for w in ["syllabus", "curriculum", "course", "subject"]):
+        topics.add("syllabus")
+
+    # Fees
+    if any(w in msg for w in ["fee", "payment", "scholarship", "refund"]):
+        topics.add("fees")
+        topics.add("notices")
+
+    # Admission
+    if any(w in msg for w in ["admission", "admit", "hpcet", "entrance", "counseling",
+                               "counselling", "jee", "gate"]):
+        topics.add("documents")
+        topics.add("notices")
+
+    # Documents / Forms / Downloads
+    if any(w in msg for w in ["download", "form", "pdf", "document", "admit card",
+                               "calendar", "holiday"]):
+        topics.add("documents")
+
+    # If no specific topic detected, it's a general question — no heavy data needed
+    return topics
+
+
+def _search_items(items, query, fields=("title",), max_results=20):
+    """Fast keyword search across a list of dicts."""
+    query_words = query.lower().split()
+    results = []
+    for item in items:
+        text = " ".join(str(item.get(f, "")) for f in fields).lower()
+        score = sum(1 for w in query_words if w in text)
+        if score > 0:
+            results.append((score, item))
+    results.sort(key=lambda x: x[0], reverse=True)
+    return [r[1] for r in results[:max_results]]
+
+
+def _build_smart_context(user_message):
+    """Build minimal, relevant context based on what the user is actually asking."""
+    _refresh_cache()
+
+    topics = _detect_query_topics(user_message)
     context_parts = []
 
-    # ── Current HPTU notices with direct PDF links ──
-    try:
-        hptu_notices = load_hptu_notices()
-        if hptu_notices:
-            notice_text = "\n\n📋 CURRENT HPTU NOTIFICATIONS (with direct PDF links):\n"
-            for i, n in enumerate(hptu_notices[:30], 1):
-                notice_text += f"\n{i}. 📌 {n.get('title', 'N/A')}"
-                if n.get('date'):
-                    notice_text += f"\n   Date: {n['date']}"
-                if n.get('last_date'):
-                    notice_text += f" | Deadline: {n['last_date']}"
-                if n.get('category'):
-                    notice_text += f"\n   Category: {n['category']}"
+    # If no specific topic — general question, skip heavy data
+    if not topics:
+        return ""
+
+    # ── PYQ: Only include matching papers ──
+    if "pyq" in topics:
+        pyq_papers = _search_items(
+            _context_cache.get("pyq", []),
+            user_message,
+            fields=("title", "course", "branch"),
+            max_results=25
+        )
+        if pyq_papers:
+            pyq_text = "\n📝 MATCHING PYQ PAPERS (from hptuonline.com):\n"
+            for p in pyq_papers:
+                pyq_text += f"  • {p.get('title', '')} [{p.get('course', '')}]"
+                if p.get('branch'):
+                    pyq_text += f" - {p['branch']}"
+                if p.get('link'):
+                    pyq_text += f"\n    🔗 {p['link']}"
+                pyq_text += "\n"
+            context_parts.append(pyq_text)
+        else:
+            context_parts.append("\n📝 PYQ: No exact match found. Direct user to https://www.hptuonline.com/\n")
+
+    # ── Notices: Only top 10 recent ──
+    if "notices" in topics:
+        notices = _context_cache.get("notices", [])[:10]
+        if notices:
+            notice_text = "\n📋 LATEST NOTICES:\n"
+            for n in notices:
+                notice_text += f"  • {n.get('title', '')} ({n.get('date', '')})"
                 if n.get('link'):
-                    notice_text += f"\n   📄 DIRECT LINK: {n['link']}"
+                    notice_text += f"\n    📄 {n['link']}"
                 notice_text += "\n"
-
-                # Include PDF text if available (for answering content questions)
-                pdf_text = n.get('pdf_text', '')
-                if pdf_text:
-                    notice_text += f"   [PDF Content]: {pdf_text[:400]}\n"
-
             context_parts.append(notice_text)
-    except Exception as e:
-        print(f"Context build error (notices): {e}")
 
-    # ── Documents & Resources (date sheets, forms, exam schedules, etc.) ──
-    try:
-        documents = load_documents()
-        if documents:
-            doc_text = "\n\n📂 HPTU DOCUMENTS & RESOURCES (searchable by category):\n"
-
-            # Group by category for better organization
-            by_cat = {}
-            for d in documents:
-                cat = d.get('category', 'general')
-                if cat not in by_cat:
-                    by_cat[cat] = []
-                by_cat[cat].append(d)
-
-            category_labels = {
-                "date_sheet": "📅 DATE SHEETS",
-                "academic_calendar": "📆 ACADEMIC CALENDAR",
-                "admit_card": "🎫 ADMIT CARDS",
-                "results": "📊 RESULTS",
-                "syllabus": "📚 SYLLABUS",
-                "fees": "💰 FEES",
-                "fee_payment": "💳 FEE PAYMENT",
-                "forms": "📝 FORMS",
-                "admission": "🎓 ADMISSION",
-                "circulars": "📜 CIRCULARS",
-                "examination_portal": "🖥️ EXAMINATION PORTAL",
-                "certificates": "📜 CERTIFICATES",
-                "holiday_calendar": "📅 HOLIDAYS",
-                "special_chance": "🔄 SPECIAL CHANCE",
-                "revaluation": "🔍 REVALUATION",
-                "tender": "📋 TENDERS",
-                "general": "ℹ️ GENERAL",
-            }
-
-            for cat, items in by_cat.items():
-                label = category_labels.get(cat, cat.upper())
-                doc_text += f"\n  {label}:\n"
-                for d in items[:10]:  # max 10 per category
-                    doc_text += f"    • {d.get('title', 'N/A')}"
-                    if d.get('program') and d['program'] != 'General':
-                        doc_text += f" [{d['program']}]"
-                    if d.get('link'):
-                        doc_text += f"\n      🔗 LINK: {d['link']}"
-                    doc_text += "\n"
-
+    # ── Documents: Only matching ones ──
+    if "documents" in topics:
+        docs = _search_items(
+            _context_cache.get("documents", []),
+            user_message,
+            fields=("title", "category", "program"),
+            max_results=15
+        )
+        if docs:
+            doc_text = "\n📂 MATCHING DOCUMENTS:\n"
+            for d in docs:
+                doc_text += f"  • {d.get('title', '')} [{d.get('category', '')}]"
+                if d.get('link'):
+                    doc_text += f"\n    🔗 {d['link']}"
+                doc_text += "\n"
             context_parts.append(doc_text)
-    except Exception as e:
-        print(f"Context build error (documents): {e}")
 
-    # ── University announcements ──
-    try:
-        uni_notices = load_notices()
-        if uni_notices:
-            uni_text = "\n📢 UNIVERSITY ANNOUNCEMENTS:\n"
-            for nid, n in uni_notices.items():
-                uni_text += f"- {n.get('title', '')}: {n.get('description', '')} ({n.get('date', '')})\n"
-            context_parts.append(uni_text)
-    except Exception:
-        pass
-
-    # ── Syllabus data with download links ──
-    try:
-        syllabus = load_syllabus()
+    # ── Syllabus ──
+    if "syllabus" in topics:
+        syllabus = _search_items(
+            _context_cache.get("syllabus", []),
+            user_message,
+            fields=("title", "program"),
+            max_results=10
+        )
         if syllabus:
-            syl_text = "\n📚 AVAILABLE SYLLABUS/CURRICULUM:\n"
-            for s in syllabus[:20]:
-                syl_text += f"- {s.get('title', 'N/A')}"
-                if s.get('program'):
-                    syl_text += f" ({s['program']})"
+            syl_text = "\n📚 SYLLABUS:\n"
+            for s in syllabus:
+                syl_text += f"  • {s.get('title', '')}"
                 if s.get('link'):
-                    syl_text += f"\n  📄 Download: {s['link']}"
+                    syl_text += f"\n    📄 {s['link']}"
                 syl_text += "\n"
             context_parts.append(syl_text)
-    except Exception:
-        pass
 
-    # ── Fees data with links ──
-    try:
-        fees = load_fees()
+    # ── Fees ──
+    if "fees" in topics:
+        fees = _context_cache.get("fees", [])[:10]
         if fees:
-            fees_text = "\n💰 FEE STRUCTURE INFORMATION:\n"
-            for f in fees[:15]:
+            fees_text = "\n💰 FEES INFO:\n"
+            for f in fees:
                 if f.get('description'):
-                    fees_text += f"- {f['description']}\n"
+                    fees_text += f"  • {f['description']}\n"
                 elif f.get('title'):
-                    fees_text += f"- {f['title']}"
+                    fees_text += f"  • {f['title']}"
                     if f.get('link'):
-                        fees_text += f"\n  📄 Details: {f['link']}"
+                        fees_text += f" — {f['link']}"
                     fees_text += "\n"
             context_parts.append(fees_text)
-    except Exception:
-        pass
-
-    # ── Scraped PDF content (for answering questions about content inside PDFs) ──
-    try:
-        pdfs = load_scraped_pdfs()
-        if pdfs:
-            pdf_context = "\n📄 EXTRACTED CONTENT FROM HPTU PDF DOCUMENTS:\n"
-            total_chars = 0
-            for pdf in pdfs[:10]:
-                text = pdf.get("text", "")
-                if text and total_chars < 6000:
-                    pdf_context += f"\n--- {pdf.get('title', 'Document')} ---\n"
-                    if pdf.get('url'):
-                        pdf_context += f"PDF Link: {pdf['url']}\n"
-                    remaining = 6000 - total_chars
-                    pdf_context += text[:remaining] + "\n"
-                    total_chars += min(len(text), remaining)
-            context_parts.append(pdf_context)
-    except Exception:
-        pass
 
     return "\n".join(context_parts)
 
 
 def get_chat_response(user_message, pdf_text=""):
     """
-    Send a message to the Cohere AI with real-time HPTU data context.
-    Includes user-uploaded PDF context if available.
+    Fast AI chat — only loads relevant context, uses lighter model for general queries.
     """
     from backend import co
 
@@ -263,36 +249,42 @@ def get_chat_response(user_message, pdf_text=""):
         return "AI service is not configured. Please set the COHERE_API_KEY."
 
     try:
-        # Build system prompt with real-time data
-        realtime_context = _build_realtime_context()
+        start = time.time()
+
+        # Build ONLY relevant context (not everything)
+        smart_context = _build_smart_context(user_message)
 
         system_prompt = HPTU_SYSTEM_PROMPT
 
-        if realtime_context:
-            system_prompt += f"\n\n{'='*50}\nREAL-TIME HPTU DATA (auto-updated from official website):\n{'='*50}\n"
-            system_prompt += realtime_context
+        if smart_context:
+            system_prompt += f"\n\nRELEVANT DATA:\n{smart_context}"
 
         if pdf_text:
-            system_prompt += f"\n\n{'='*50}\nUSER UPLOADED PDF CONTENT:\n{'='*50}\n"
-            system_prompt += pdf_text[:15000]
+            system_prompt += f"\n\nUSER UPLOADED PDF CONTENT:\n{pdf_text[:8000]}"
 
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ]
 
+        # Use faster model for general questions, full model only when data-heavy
+        topics = _detect_query_topics(user_message)
+        model = "command-r-plus" if not topics else "command-a-03-2025"
+
         response = co.chat(
-            model="command-a-03-2025",
+            model=model,
             messages=messages,
         )
 
         reply = response.message.content[0].text
+        elapsed = round(time.time() - start, 1)
+        print(f"⚡ Chat response in {elapsed}s (model={model}, topics={topics or 'general'})")
 
     except Exception as e:
         print("Chat Error:", e)
-        reply = "I'm sorry, I'm having trouble connecting to the AI service right now. Please try again in a moment."
+        reply = "I'm sorry, I'm having trouble connecting right now. Please try again in a moment."
 
-    # Log the conversation (in-memory + MongoDB)
+    # Log conversation
     log_entry = {
         "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "user": user_message[:100],
@@ -302,7 +294,6 @@ def get_chat_response(user_message, pdf_text=""):
     if len(chat_logs) > 50:
         chat_logs.pop(0)
 
-    # Persist to MongoDB
     try:
         from backend.services.notice_service import save_chat_log
         save_chat_log(user_message, reply)

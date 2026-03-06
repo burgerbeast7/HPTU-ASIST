@@ -243,6 +243,37 @@ def save_documents(data):
             print(f"MongoDB save_documents error: {e}")
 
 
+# ─── PYQ (Previous Year Questions) ───────────────
+
+def load_pyq():
+    """Load all scraped PYQ papers from MongoDB."""
+    col = _get_collection("pyq")
+    if col is not None:
+        try:
+            items = []
+            for doc in col.find({}, {"_id": 0}).sort("scraped_at", -1):
+                items.append(doc)
+            return items
+        except Exception as e:
+            print(f"MongoDB load_pyq error: {e}")
+    return []
+
+
+def save_pyq(data):
+    """Save scraped PYQ papers to MongoDB (replace all)."""
+    col = _get_collection("pyq")
+    if col is not None:
+        try:
+            col.delete_many({})
+            if data:
+                now = datetime.utcnow()
+                for item in data:
+                    item["scraped_at"] = now
+                col.insert_many(data)
+        except Exception as e:
+            print(f"MongoDB save_pyq error: {e}")
+
+
 # ─── Chat Logs (persistent in MongoDB) ───────────
 
 def save_chat_log(user_msg, bot_reply):

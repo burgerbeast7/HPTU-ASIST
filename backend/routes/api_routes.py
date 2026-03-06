@@ -4,7 +4,7 @@ API Routes — JSON endpoints for notices, syllabus, fees, scraper status
 from flask import Blueprint, jsonify
 from backend.services.notice_service import (
     load_notices, load_hptu_notices, load_syllabus,
-    load_fees, load_scraped_pdfs, load_scraper_status
+    load_fees, load_scraped_pdfs, load_scraper_status, load_pyq
 )
 
 api_bp = Blueprint("api", __name__)
@@ -54,3 +54,21 @@ def get_scraped_pdfs():
             "text_preview": p.get("text", "")[:200] + "..." if p.get("text") else "",
         })
     return jsonify(summary)
+
+
+@api_bp.route("/pyq")
+def get_pyq():
+    """Return all scraped PYQ (Previous Year Questions) as JSON."""
+    return jsonify(load_pyq())
+
+
+@api_bp.route("/pyq/search")
+def search_pyq_api():
+    """Search PYQ papers by keyword."""
+    from flask import request
+    query = request.args.get("q", "")
+    if not query:
+        return jsonify({"error": "Please provide a search query using ?q=keyword"}), 400
+    from backend.services.pyq_service import search_pyq
+    results = search_pyq(query)
+    return jsonify(results)
