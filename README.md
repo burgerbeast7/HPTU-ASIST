@@ -2,11 +2,14 @@
 
 An AI-powered smart helpdesk system for **Himachal Pradesh Technical University (HPTU)**, Hamirpur. Built as a Capstone Project, it provides real-time university information through an intelligent chatbot, auto-scraped notifications, syllabus, fee structures, and downloadable documents — all in one place.
 
+🌐 **Live Demo:** [https://burgerbeast-projects.onrender.com](https://burgerbeast-projects.onrender.com)
+
 ![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-green?logo=flask)
 ![MongoDB](https://img.shields.io/badge/MongoDB-Database-darkgreen?logo=mongodb)
 ![Cohere AI](https://img.shields.io/badge/Cohere-AI%20Chatbot-purple?logo=data:image/svg+xml;base64,)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20on%20Render-brightgreen?logo=render)](https://burgerbeast-projects.onrender.com)
 
 ---
 
