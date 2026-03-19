@@ -40,7 +40,7 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - Auto-sends the message after speech is recognized
 - Visual feedback with animated pulse indicator while listening
 
-### � Previous Year Question Papers (PYQ)
+### 📄 Previous Year Question Papers (PYQ)
 - Scrapes **1000+ question papers** from [hptuonline.com](https://www.hptuonline.com)
 - Covers all courses: B.Tech (8 branches), BBA, BCA, MBA, MCA, B.Pharmacy, M.Pharmacy, M.Sc, M.Tech, Ph.D, Yoga, HPTSB Diploma/ITI
 - **Structured data extraction**: subject name, semester, exam period, paper code
@@ -147,7 +147,7 @@ HPTU-AI-Assistant/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/HPTU-AI-Assistant.git
+   git clone https://github.com/burgerbeast7/HPTU-ASIST.git
    cd HPTU-AI-Assistant
    ```
 
@@ -186,6 +186,29 @@ HPTU-AI-Assistant/
    ```
 
 7. **Open in browser**
+   ```
+   http://127.0.0.1:5000
+   ```
+
+---
+
+## 🧪 Troubleshooting
+
+- **Error: `ModuleNotFoundError: No module named 'cohere'`**
+   Install dependencies again in the active virtual environment:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+- **PowerShell script execution issues (Windows)**
+   If activation is blocked, run:
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   .\venv\Scripts\Activate.ps1
+   ```
+
+- **App starts but page not opening**
+   Make sure Flask is running and open:
    ```
    http://127.0.0.1:5000
    ```
