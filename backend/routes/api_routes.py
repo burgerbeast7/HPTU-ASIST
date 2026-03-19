@@ -83,3 +83,41 @@ def get_pyq_courses():
         "courses": get_available_courses(),
         "btech_branches": get_btech_branches(),
     })
+
+
+@api_bp.route("/results/btech-5th")
+def get_btech_5th_result():
+    """Fetch B.Tech 5th sem result by roll number. Example: /api/results/btech-5th?roll=123456"""
+    from flask import request
+    from backend.services.result_service import fetch_btech_5th_result
+
+    roll_no = (request.args.get("roll") or "").strip()
+    if not roll_no:
+        return jsonify({
+            "ok": False,
+            "status": "missing_roll",
+            "message": "Please provide roll query parameter.",
+        }), 400
+
+    data = fetch_btech_5th_result(roll_no)
+    status_code = 200 if data.get("ok") else 404
+    return jsonify(data), status_code
+
+
+@api_bp.route("/results/btech-5th/by-name")
+def get_btech_5th_result_by_name():
+    """Search B.Tech 5th sem result by name. Example: /api/results/btech-5th/by-name?name=Rahul Kumar"""
+    from flask import request
+    from backend.services.result_service import fetch_btech_5th_results_by_name
+
+    name = (request.args.get("name") or "").strip()
+    if not name:
+        return jsonify({
+            "ok": False,
+            "status": "missing_name",
+            "message": "Please provide name query parameter.",
+        }), 400
+
+    data = fetch_btech_5th_results_by_name(name)
+    status_code = 200 if data.get("ok") else 404
+    return jsonify(data), status_code

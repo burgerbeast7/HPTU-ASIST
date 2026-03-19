@@ -3,6 +3,7 @@ Chat Service — Fast AI chatbot with smart context loading
 Only loads relevant data based on user query. Caches context. Uses faster model.
 """
 import time
+import re
 from datetime import datetime
 
 # In-memory chat logs
@@ -267,6 +268,41 @@ def get_chat_response(user_message, pdf_text=""):
     Fast AI chat — only loads relevant context, uses lighter model for general queries.
     """
     from backend import co
+
+    normalized = (user_message or "").lower().strip()
+    has_roll = re.search(r"\b\d{5,15}\b", user_message or "") is not None
+    is_result_intent = (
+        "result" in normalized
+        or "roll" in normalized
+        or "marksheet" in normalized
+        or (has_roll and any(k in normalized for k in ["sem", "semester", "btech", "hptu"]))
+        or normalized.isdigit()
+    )
+
+    # Result lookups are handled with deterministic scraping, not LLM generation.
+    if is_result_intent:
+        try:
+            from backend.services.result_service import handle_btech_5th_result_query
+            reply = handle_btech_5th_result_query(user_message)
+
+            log_entry = {
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "user": user_message[:100],
+                "bot": reply[:150],
+            }
+            chat_logs.append(log_entry)
+            if len(chat_logs) > 50:
+                chat_logs.pop(0)
+
+            try:
+                from backend.services.notice_service import save_chat_log
+                save_chat_log(user_message, reply)
+            except Exception:
+                pass
+
+            return reply
+        except Exception as e:
+            print(f"Result intent handler error: {e}")
 
     if not co:
         return "AI service is not configured. Please set the COHERE_API_KEY."

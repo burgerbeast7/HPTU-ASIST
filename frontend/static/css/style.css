@@ -1426,6 +1426,44 @@ footer {
 
 .pdf-indicator button:hover { color: #e74c3c; }
 
+/* Chat Quick Actions */
+.chat-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.quick-action-btn {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--navy);
+    border-radius: 18px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.quick-action-btn i {
+    margin-right: 6px;
+    color: var(--blue);
+}
+
+.quick-action-btn:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+    transform: translateY(-1px);
+}
+
+[data-theme="dark"] .quick-action-btn {
+    color: var(--text);
+    background: var(--surface-2);
+}
+
 /* ═══════════════════════════════════════════
    FLOAT CHAT BUTTON
    ═══════════════════════════════════════════ */
@@ -1595,6 +1633,9 @@ footer {
 
     .splash-text h1 { font-size: 20px; letter-spacing: 1px; }
     .splash-logo { width: 70px; height: 70px; }
+
+    .chat-quick-actions { padding: 8px 10px; }
+    .quick-action-btn { width: 100%; text-align: center; }
 }
 
 @media (max-width: 480px) {

@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const pdfUpload = document.getElementById('pdfUpload');
     const pdfIndicator = document.getElementById('pdfIndicator');
     const pdfFileName = document.getElementById('pdfFileName');
+    const quickResultBtn = document.getElementById('quickResultBtn');
+    const quickResultByNameBtn = document.getElementById('quickResultByNameBtn');
     const chatToggle = document.getElementById('chatToggle');
     const splashScreen = document.getElementById('splashScreen');
     const themeToggle = document.getElementById('themeToggle');
@@ -203,6 +205,20 @@ document.addEventListener('DOMContentLoaded', function () {
     userInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') sendMessage();
     });
+
+    if (quickResultBtn) {
+        quickResultBtn.addEventListener('click', () => {
+            userInput.value = 'result';
+            sendMessage();
+        });
+    }
+
+    if (quickResultByNameBtn) {
+        quickResultByNameBtn.addEventListener('click', () => {
+            userInput.value = 'search result by name '; 
+            userInput.focus();
+        });
+    }
 
     function sendMessage() {
         const text = userInput.value.trim();
