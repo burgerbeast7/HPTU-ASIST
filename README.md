@@ -220,8 +220,8 @@ HPTU-AI-Assistant/
 | | |
 |---|---|
 | **URL** | `/admin/login` |
-| **Username** | `admin` |
-| **Password** | `kunal123` |
+| **Username** | `` |
+| **Password** | `` |
 
 ---
 
