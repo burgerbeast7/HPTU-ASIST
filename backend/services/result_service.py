@@ -3,22 +3,106 @@ Result Service — B.Tech 5th semester result lookup from IndiaResults.
 Handles roll number submission and lightweight parsing of the result page.
 """
 import re
+import time
 from typing import Dict, List
 
 import requests
 from bs4 import BeautifulSoup
 
 
-DESKTOP_QUERY_URL = "https://himturesult.indiaresults.com/hp/himtu/hp-himtu/query.aspx?id=1800266731"
-MOBILE_QUERY_URL = "https://results.indiaresults.com/hp/himtu/hp-himtu/mquery.aspx?id=1800266731"
+DESKTOP_QUERY_URL = "https://himturesult.indiaresults.com/hp/himtu/hp-himtu/query.aspx?id=1800266751"
+MOBILE_QUERY_URL = "https://results.indiaresults.com/hp/himtu/hp-himtu/mquery.aspx?id=1800266751"
 MOBILE_RESULT_POST_URL = "https://results.indiaresults.com/hp/himtu/mresult.aspx"
-DESKTOP_NAME_RESULT_POST_URL = "https://himturesult.indiaresults.com/hp/himtu/name-results.aspx"
+RESULTS_HOME_URL = "https://himturesult.indiaresults.com/hp/himtu/default.aspx"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Referer": MOBILE_QUERY_URL,
+    "Referer": DESKTOP_QUERY_URL,
 }
+
+# Lightweight in-memory cache for latest query links.
+_query_cache = {
+    "items": [],
+    "fetched_at": 0.0,
+}
+
+
+def _extract_query_id(query_url: str) -> str:
+    m = re.search(r"[?&]id=(\d+)", query_url or "")
+    return m.group(1) if m else ""
+
+
+def _is_generic_result_page(text: str) -> bool:
+    low = (text or "").lower()
+    return "select state" in low and "indiaresults" in low
+
+
+def _get_recent_query_links(max_items: int = 80) -> List[Dict[str, str]]:
+    """Load latest result query links from IndiaResults home, with cache."""
+    now = time.time()
+    if _query_cache["items"] and now - _query_cache["fetched_at"] < 900:
+        return _query_cache["items"][:max_items]
+
+    items: List[Dict[str, str]] = []
+    try:
+        resp = requests.get(RESULTS_HOME_URL, headers=HEADERS, timeout=25)
+        resp.raise_for_status()
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        seen = set()
+        for a in soup.find_all("a", href=True):
+            href = a.get("href", "")
+            if "query.aspx?id=" not in href:
+                continue
+            url = requests.compat.urljoin(RESULTS_HOME_URL, href)
+            qid = _extract_query_id(url)
+            if not qid or qid in seen:
+                continue
+            seen.add(qid)
+            title = _normalize_space(a.get_text(" ", strip=True))
+            items.append({"query_url": url, "title": title, "id": qid})
+            if len(items) >= max_items:
+                break
+    except Exception as e:
+        print(f"Result query-link scrape error: {e}")
+
+    # Always keep configured query first.
+    configured = {
+        "query_url": DESKTOP_QUERY_URL,
+        "title": "Configured default result page",
+        "id": _extract_query_id(DESKTOP_QUERY_URL),
+    }
+    merged: List[Dict[str, str]] = [configured]
+    merged.extend([i for i in items if i.get("id") != configured["id"]])
+
+    _query_cache["items"] = merged
+    _query_cache["fetched_at"] = now
+    return merged[:max_items]
+
+
+def _fetch_query_context(session: requests.Session, query_url: str) -> Dict[str, str]:
+    """Fetch query page and return title plus JS-equivalent roll/name action URLs."""
+    query_resp = session.get(query_url, headers={**HEADERS, "Referer": query_url}, timeout=25)
+    query_resp.raise_for_status()
+    query_soup = BeautifulSoup(query_resp.text, "html.parser")
+    query_title = _normalize_space(query_soup.title.get_text(" ", strip=True) if query_soup.title else "")
+
+    suffix = "?chk=Y" if "chk=Y" in query_url else ""
+    # Query page JS sets these on button click:
+    # show_roll_result -> result.aspx
+    # show_name_result -> name-results.aspx
+    roll_action_url = requests.compat.urljoin(query_url, f"result.aspx{suffix}")
+    name_action_url = requests.compat.urljoin(query_url, f"name-results.aspx{suffix}")
+    payload = _extract_hidden_fields(query_resp.text)
+
+    return {
+        "title": query_title,
+        "roll_action_url": roll_action_url,
+        "name_action_url": name_action_url,
+        "payload": payload,
+        "query_url": query_url,
+    }
 
 
 def _extract_hidden_fields(query_html: str) -> Dict[str, str]:
@@ -77,11 +161,15 @@ def _extract_key_values_from_text(visible_text: str) -> Dict[str, str]:
     text = visible_text or ""
 
     patterns = {
-        "name": [r"(?:candidate\s*name|student\s*name|name)\s*[:\-]\s*([A-Za-z\s\.]+)"],
-        "roll no": [r"(?:roll\s*no\.?|roll\s*number)\s*[:\-]\s*(\d{5,15})"],
-        "result": [r"(?:final\s*result|result|status)\s*[:\-]\s*([A-Za-z\s\+\-]+)"],
-        "sgpa": [r"sgpa\s*[:\-]\s*([0-9]+(?:\.[0-9]+)?)"],
-        "cgpa": [r"cgpa\s*[:\-]\s*([0-9]+(?:\.[0-9]+)?)"],
+        "name": [
+            r"(?:candidate\s*name|student\s*name|name)\s*[:\-]?\s*([A-Za-z][A-Za-z\s\.]{1,60}?)(?=\s+father|\s+marks|\s+result|$)",
+        ],
+        "roll no": [r"(?:roll\s*no\.?|roll\s*number)\s*[:\-]?\s*(\d{5,15})"],
+        "result": [
+            r"(?:final\s*result|result|status)\s*[:\-]?\s*(PASS|FAIL|RE-APPEAR|REAPPEAR|PASSED|FAILED)",
+        ],
+        "sgpa": [r"sgpa\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)"],
+        "cgpa": [r"cgpa\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)"],
     }
 
     for key, regex_list in patterns.items():
@@ -101,42 +189,79 @@ def _extract_key_values_from_text(visible_text: str) -> Dict[str, str]:
 
 
 def _extract_subject_rows(result_container: BeautifulSoup) -> List[str]:
-    """Extract subject-wise rows (best effort)."""
-    subject_lines: List[str] = []
-    subject_words = (
-        "subject", "code", "marks", "grade", "credit", "obtained", "total", "theory", "practical"
+    """Extract subject-wise rows in clean 'Subject | Code | Credit | Grade' format."""
+    # Prefer table-structured extraction from the marks-details table.
+    for table in result_container.find_all("table"):
+        rows = table.find_all("tr")
+        if not rows:
+            continue
+
+        header_cells = [
+            _normalize_space(c.get_text(" ", strip=True)).lower()
+            for c in rows[0].find_all(["td", "th"])
+        ]
+        has_marks_headers = (
+            "subject" in header_cells
+            and "subject code" in header_cells
+            and "credit" in header_cells
+            and "grade" in header_cells
+        )
+        if not has_marks_headers:
+            continue
+
+        subject_lines: List[str] = []
+        for tr in rows[1:]:
+            cells = [
+                _normalize_space(c.get_text(" ", strip=True))
+                for c in tr.find_all(["td", "th"])
+            ]
+            cells = [c for c in cells if c]
+            if len(cells) < 4:
+                continue
+
+            subject = cells[0]
+            code = cells[1]
+            credit = cells[2]
+            grade = cells[3]
+
+            # Ignore footer/non-subject rows.
+            if subject.lower() in {"final result", "remarks"}:
+                continue
+            if len(subject) < 2 or not re.search(r"[A-Za-z]", subject):
+                continue
+
+            subject_lines.append(f"{subject} | {code} | Credit: {credit} | Grade: {grade}")
+
+        if subject_lines:
+            return subject_lines
+
+    # Fallback: extract common subject-code rows directly from plain text.
+    text = _normalize_space(result_container.get_text(" ", strip=True))
+    matches = re.findall(
+        r"([A-Za-z][A-Za-z0-9&()'\-\s]{2,80}?)\s+(CSPC-\d{3}P?)\s+(\d+)\s+([A-F][+]?)\b",
+        text,
+        flags=re.IGNORECASE,
     )
 
-    for tr in result_container.find_all("tr"):
-        cells = [
-            _normalize_space(td.get_text(" ", strip=True))
-            for td in tr.find_all(["td", "th"])
-        ]
-        cells = [c for c in cells if c]
-        if len(cells) < 3:
+    lines: List[str] = []
+    seen_codes = set()
+    for subject, code, credit, grade in matches:
+        code_u = code.upper()
+        if code_u in seen_codes:
             continue
+        seen_codes.add(code_u)
+        clean_subject = _normalize_space(subject)
+        # Remove accidental leading labels when text is flattened.
+        clean_subject = re.sub(r"^(?:subject|marks\s+details)\s+", "", clean_subject, flags=re.IGNORECASE)
+        for marker in ["marks details", "subject subject code credit grade", "grade", "student name", "father's name"]:
+            idx = clean_subject.lower().rfind(marker)
+            if idx >= 0:
+                clean_subject = _normalize_space(clean_subject[idx + len(marker):])
+        if not clean_subject:
+            clean_subject = "Subject"
+        lines.append(f"{clean_subject} | {code_u} | Credit: {credit} | Grade: {grade.upper()}")
 
-        row_text = " | ".join(cells)
-        row_l = row_text.lower()
-        if "search another" in row_l or "print this page" in row_l:
-            continue
-        # Skip obvious header/utility rows
-        if any(k in row_l for k in ["disclaimer", "indiaresults", "back"]):
-            continue
-        # Keep rows that look like academic table rows.
-        looks_structured = any(w in row_l for w in subject_words) or re.search(r"\b[A-Z]{2,}\-?\d{2,4}\b", row_text) is not None
-        if len(row_text) > 8 and looks_structured:
-            subject_lines.append(row_text)
-
-    # De-duplicate while preserving order
-    deduped: List[str] = []
-    seen = set()
-    for line in subject_lines:
-        if line in seen:
-            continue
-        seen.add(line)
-        deduped.append(line)
-    return deduped
+    return lines
 
 
 def _extract_name_from_message(user_message: str) -> str:
@@ -248,36 +373,45 @@ def fetch_btech_5th_results_by_name(name: str) -> Dict[str, object]:
             "source": DESKTOP_QUERY_URL,
         }
 
+    return _fetch_name_results_from_query(name, DESKTOP_QUERY_URL, enforce_btech_5th=True)
+
+
+def _fetch_name_results_from_query(name: str, query_url: str, enforce_btech_5th: bool = False) -> Dict[str, object]:
+    """Search by name within a specific query URL."""
     try:
         session = requests.Session()
-        query_resp = session.get(DESKTOP_QUERY_URL, headers=HEADERS, timeout=20)
-        query_resp.raise_for_status()
-
-        query_soup = BeautifulSoup(query_resp.text, "html.parser")
-        query_title = _normalize_space(query_soup.title.get_text(" ", strip=True) if query_soup.title else "")
-        if query_title and ("5th semester" not in query_title.lower() or "b.tech" not in query_title.lower()):
+        query_ctx = _fetch_query_context(session, query_url)
+        query_title = query_ctx.get("title", "")
+        if enforce_btech_5th and query_title and ("5th semester" not in query_title.lower() or "b.tech" not in query_title.lower()):
             return {
                 "ok": False,
                 "status": "wrong_exam_page",
                 "message": "Only B.Tech 5th semester result is available right now.",
-                "source": DESKTOP_QUERY_URL,
+                "source": query_url,
             }
 
-        payload = _extract_hidden_fields(query_resp.text)
+        payload = query_ctx.get("payload", {})
         payload["txtName"] = name
 
-        resp = session.post(DESKTOP_NAME_RESULT_POST_URL, data=payload, headers=HEADERS, timeout=25)
+        headers = {**HEADERS, "Referer": query_url}
+        resp = session.post(query_ctx.get("name_action_url", query_url), data=payload, headers=headers, timeout=25)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "html.parser")
+        visible_text = _normalize_space(soup.get_text(" ", strip=True))
 
         candidates = _extract_name_candidates(soup)
         if not candidates:
+            status = "not_found_name"
+            message = f"No result found for name '{name}' in this list."
+            if _is_generic_result_page(visible_text):
+                status = "query_no_match_name"
+                message = f"No matching name found in this result list for '{name}'."
             return {
                 "ok": False,
-                "status": "not_found_name",
-                "message": f"No B.Tech 5th sem result found for name '{name}'.",
+                "status": status,
+                "message": message,
                 "exam": query_title,
-                "source": DESKTOP_QUERY_URL,
+                "source": query_url,
             }
 
         return {
@@ -286,7 +420,7 @@ def fetch_btech_5th_results_by_name(name: str) -> Dict[str, object]:
             "exam": query_title,
             "search_name": name,
             "matches": candidates[:15],
-            "source": DESKTOP_QUERY_URL,
+            "source": query_url,
         }
 
     except requests.RequestException as e:
@@ -294,15 +428,73 @@ def fetch_btech_5th_results_by_name(name: str) -> Dict[str, object]:
             "ok": False,
             "status": "network_error",
             "message": f"Could not fetch result portal right now: {e}",
-            "source": DESKTOP_QUERY_URL,
+            "source": query_url,
         }
     except Exception as e:
         return {
             "ok": False,
             "status": "parse_error",
             "message": f"Could not parse name search result right now: {e}",
-            "source": DESKTOP_QUERY_URL,
+            "source": query_url,
         }
+
+
+def fetch_result_by_name_any_exam(name: str, max_queries: int = 30) -> Dict[str, object]:
+    """Try multiple recent HIMTU result query IDs and return matching names/roll numbers."""
+    queries = _get_recent_query_links(max_items=max_queries)
+    if not queries:
+        return {
+            "ok": False,
+            "status": "no_query_links",
+            "message": "Could not load result lists right now.",
+            "source": RESULTS_HOME_URL,
+        }
+
+    collected: List[Dict[str, str]] = []
+    seen_rolls = set()
+    last_error = None
+
+    for item in queries:
+        query_url = item.get("query_url", "")
+        data = _fetch_name_results_from_query(name, query_url, enforce_btech_5th=False)
+        if data.get("ok"):
+            exam = data.get("exam", "")
+            for match in data.get("matches", []):
+                roll = match.get("roll_no", "")
+                if not roll or roll in seen_rolls:
+                    continue
+                seen_rolls.add(roll)
+                collected.append({
+                    "roll_no": roll,
+                    "name": match.get("name", ""),
+                    "exam": exam,
+                })
+                if len(collected) >= 20:
+                    break
+        elif data.get("status") in {"network_error", "parse_error"}:
+            last_error = data
+
+        if len(collected) >= 20:
+            break
+
+    if collected:
+        return {
+            "ok": True,
+            "status": "found_name_any",
+            "search_name": name,
+            "matches": collected,
+            "source": RESULTS_HOME_URL,
+        }
+
+    if last_error:
+        return last_error
+
+    return {
+        "ok": False,
+        "status": "not_found_name_any",
+        "message": f"No matching result found in recent HIMTU result lists for name '{name}'.",
+        "source": RESULTS_HOME_URL,
+    }
 
 
 def fetch_btech_5th_result(roll_no: str) -> Dict[str, object]:
@@ -318,32 +510,35 @@ def fetch_btech_5th_result(roll_no: str) -> Dict[str, object]:
             "message": "Please enter a valid numeric roll number.",
         }
 
+    return _fetch_roll_result_from_query(roll_no, DESKTOP_QUERY_URL, enforce_btech_5th=True)
+
+
+def _fetch_roll_result_from_query(roll_no: str, query_url: str, enforce_btech_5th: bool = False) -> Dict[str, object]:
+    """Fetch roll result from a specific IndiaResults query URL."""
     try:
         session = requests.Session()
-        query_resp = session.get(MOBILE_QUERY_URL, headers=HEADERS, timeout=20)
-        query_resp.raise_for_status()
+        query_ctx = _fetch_query_context(session, query_url)
+        query_title = query_ctx.get("title", "")
 
-        query_soup = BeautifulSoup(query_resp.text, "html.parser")
-        query_title = _normalize_space(query_soup.title.get_text(" ", strip=True) if query_soup.title else "")
+        # Safety gate when caller wants strict B.Tech 5th semantics.
+        if enforce_btech_5th and query_title and ("5th semester" not in query_title.lower() or "b.tech" not in query_title.lower()):
+            return {
+                "ok": False,
+                "status": "wrong_exam_page",
+                "message": "Only B.Tech 5th semester result is available right now.",
+                "source": query_url,
+            }
 
-        payload = _extract_hidden_fields(query_resp.text)
+        payload = query_ctx.get("payload", {})
         payload["RollNo"] = roll_no
 
-        result_resp = session.post(MOBILE_RESULT_POST_URL, data=payload, headers=HEADERS, timeout=25)
+        headers = {**HEADERS, "Referer": query_url}
+        result_resp = session.post(query_ctx.get("roll_action_url", MOBILE_RESULT_POST_URL), data=payload, headers=headers, timeout=25)
         result_resp.raise_for_status()
 
         soup = BeautifulSoup(result_resp.text, "html.parser")
         title = _normalize_space(soup.title.get_text(" ", strip=True) if soup.title else "")
         exam_title = query_title or title
-
-        # Safety gate: this feature is strictly for B.Tech 5th sem result page id.
-        if exam_title and ("5th semester" not in exam_title.lower() or "b.tech" not in exam_title.lower()):
-            return {
-                "ok": False,
-                "status": "wrong_exam_page",
-                "message": "Only B.Tech 5th semester result is available right now.",
-                "source": DESKTOP_QUERY_URL,
-            }
 
         result_container = soup.find("div", class_="result_detail") or soup
 
@@ -364,14 +559,18 @@ def fetch_btech_5th_result(roll_no: str) -> Dict[str, object]:
         text_roll_match = re.search(r"\b\d{5,15}\b", visible_text)
         candidate_roll = text_roll_match.group(0) if text_roll_match else ""
 
-        # Heuristic for "not found": no useful extracted data.
         has_useful_rows = len(subject_rows) >= 2 or len(merged_kv) >= 2
         if not has_useful_rows:
+            status = "not_found"
+            message = "Result not found for this roll number in this result list."
+            if _is_generic_result_page(visible_text):
+                status = "query_no_match"
+                message = "No matching record found in this result list."
             return {
                 "ok": False,
-                "status": "not_found",
-                "message": "Result not found for this roll number in B.Tech 5th semester list.",
-                "source": DESKTOP_QUERY_URL,
+                "status": status,
+                "message": message,
+                "source": query_url,
                 "exam": exam_title,
             }
 
@@ -397,7 +596,7 @@ def fetch_btech_5th_result(roll_no: str) -> Dict[str, object]:
             "sgpa": sgpa,
             "cgpa": cgpa,
             "rows": subject_rows[:20],
-            "source": DESKTOP_QUERY_URL,
+            "source": query_url,
         }
 
     except requests.RequestException as e:
@@ -405,74 +604,113 @@ def fetch_btech_5th_result(roll_no: str) -> Dict[str, object]:
             "ok": False,
             "status": "network_error",
             "message": f"Could not fetch result portal right now: {e}",
-            "source": DESKTOP_QUERY_URL,
+            "source": query_url,
         }
     except Exception as e:
         return {
             "ok": False,
             "status": "parse_error",
             "message": f"Could not parse result right now: {e}",
-            "source": DESKTOP_QUERY_URL,
+            "source": query_url,
         }
 
 
+def fetch_result_any_exam(roll_no: str, max_queries: int = 30) -> Dict[str, object]:
+    """Try multiple recent HIMTU result query IDs and return first matching roll result."""
+    queries = _get_recent_query_links(max_items=max_queries)
+    if not queries:
+        return {
+            "ok": False,
+            "status": "no_query_links",
+            "message": "Could not load result lists right now.",
+            "source": RESULTS_HOME_URL,
+        }
+
+    last_error = None
+    for item in queries:
+        query_url = item.get("query_url", "")
+        data = _fetch_roll_result_from_query(roll_no, query_url, enforce_btech_5th=False)
+        if data.get("ok"):
+            return data
+
+        if data.get("status") in {"network_error", "parse_error"}:
+            last_error = data
+
+    if last_error:
+        return last_error
+
+    return {
+        "ok": False,
+        "status": "not_found_any",
+        "message": "No matching result found in recent HIMTU result lists.",
+        "source": RESULTS_HOME_URL,
+    }
+
+
 def handle_btech_5th_result_query(user_message: str) -> str:
-    """Build a chat-ready response for B.Tech 5th sem result queries."""
+    """Build a chat-ready response for HIMTU result queries in chat."""
     roll_match = re.search(r"\b\d{5,15}\b", user_message or "")
 
     if not roll_match:
         name = _extract_name_from_message(user_message)
         if name:
             by_name = fetch_btech_5th_results_by_name(name)
+            if not by_name.get("ok") and by_name.get("status") in {"not_found_name", "query_no_match_name"}:
+                by_name = fetch_result_by_name_any_exam(name, max_queries=25)
+
             if by_name.get("ok"):
                 lines = [
-                    "Only B.Tech 5th sem result is available right now.",
+                    "Result found.",
                     "",
                     f"Name Search: {by_name.get('search_name', name)}",
-                    f"Exam: {by_name.get('exam', 'B.Tech 5th Semester')}",
-                    "",
                     "Matching candidates (use roll number to get full final result):",
                 ]
                 for item in (by_name.get("matches") or [])[:10]:
                     roll = item.get("roll_no", "")
                     cname = item.get("name", "")
+                    exam = item.get("exam", by_name.get("exam", ""))
                     if cname:
-                        lines.append(f"- {cname} | Roll No: {roll}")
+                        line = f"- {cname} | Roll No: {roll}"
                     else:
-                        lines.append(f"- Roll No: {roll}")
+                        line = f"- Roll No: {roll}"
+                    if exam:
+                        line += f" | {exam}"
+                    lines.append(line)
                 lines.append("")
                 lines.append("Tip: Send only the roll number to fetch detailed final result.")
-                lines.append(f"Source: {by_name.get('source', DESKTOP_QUERY_URL)}")
+                lines.append(f"Source: {by_name.get('source', RESULTS_HOME_URL)}")
                 return "\n".join(lines)
 
             return (
-                "Only B.Tech 5th sem result is available right now.\n\n"
+                "No matching result found.\n\n"
                 f"Name Search: {name}\n"
-                f"Status: {by_name.get('message', 'No matching records found.')}\n"
-                f"Check manually: {by_name.get('source', DESKTOP_QUERY_URL)}"
+                f"Status: {by_name.get('message', 'No matching records found in recent result lists.')}\n"
+                f"Check manually: {by_name.get('source', RESULTS_HOME_URL)}"
             )
 
         return (
-            "Only B.Tech 5th sem result is available right now.\n\n"
+            "To check result, enter your roll number OR full name.\n\n"
             "Please enter your roll number OR full name to check result.\n"
-            f"Result portal: {DESKTOP_QUERY_URL}"
+            f"Result portal: {RESULTS_HOME_URL}"
         )
 
     roll_no = roll_match.group(0)
     data = fetch_btech_5th_result(roll_no)
+    if not data.get("ok") and data.get("status") in {"not_found", "query_no_match"}:
+        data = fetch_result_any_exam(roll_no, max_queries=25)
 
     if not data.get("ok"):
         return (
-            "Only B.Tech 5th sem result is available right now.\n\n"
+            "No matching result found.\n\n"
             f"Roll No: {roll_no}\n"
             f"Status: {data.get('message', 'Result not available right now.')}\n"
-            f"Check manually: {data.get('source', DESKTOP_QUERY_URL)}"
+            f"Check manually: {data.get('source', RESULTS_HOME_URL)}"
         )
 
     lines = [
-        "Only B.Tech 5th sem result is available right now.",
+        "Result found.",
         "",
-        f"Exam: {data.get('exam', 'B.Tech 5th Semester')}",
+        f"Exam: {data.get('exam', 'HIMTU Result')}",
         f"Roll No: {data.get('roll_no', roll_no)}",
     ]
     if data.get("name"):

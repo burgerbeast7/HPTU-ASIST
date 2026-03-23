@@ -22,6 +22,10 @@ class Config:
     # AI Service
     COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 
+    # Live search (Google Programmable Search)
+    GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+    GOOGLE_CSE_ID = os.getenv("GOOGLE_CSE_ID")
+
     # MongoDB
     MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017/")
     MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "hptu_assistant")

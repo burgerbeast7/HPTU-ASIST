@@ -168,6 +168,8 @@ HPTU-AI-Assistant/
    Create a `.env` file in the root directory:
    ```env
    COHERE_API_KEY=your_cohere_api_key_here
+   GOOGLE_API_KEY=your_google_api_key_here
+   GOOGLE_CSE_ID=your_google_custom_search_engine_id
    MONGODB_URI=mongodb://localhost:27017/
    MONGODB_DB_NAME=hptu_assistant
    SECRET_KEY=your-secret-key
@@ -189,6 +191,13 @@ HPTU-AI-Assistant/
    ```
    http://127.0.0.1:5000
    ```
+
+### Google Setup For Exact Date Answers (Optional but Recommended)
+
+- Create a Programmable Search Engine and add `himtu.ac.in` as a site to search.
+- Enable Custom Search JSON API in Google Cloud.
+- Add `GOOGLE_API_KEY` and `GOOGLE_CSE_ID` to `.env`.
+- With this enabled, queries like "When was HPCET exam 2026?" are answered using live web lookup with source links.
 
 ---
 

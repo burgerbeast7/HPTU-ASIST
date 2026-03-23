@@ -6,6 +6,27 @@ import time
 import re
 from datetime import datetime
 
+# Common filler words removed during token scoring.
+STOP_WORDS = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "how",
+    "i", "in", "is", "it", "me", "of", "on", "or", "please", "show", "tell",
+    "the", "to", "what", "when", "where", "which", "who", "with", "my", "your",
+    "do", "does", "can", "could", "would", "should", "about", "latest", "new",
+}
+
+HPTU_DOMAIN_KEYWORDS = {
+    "hptu", "himtu", "hamirpur", "hpcet", "hptuonline", "indiaresults",
+    "btech", "mtech", "bba", "bca", "mba", "mca", "bpharmacy", "mpharmacy",
+    "result", "results", "datesheet", "date sheet", "syllabus", "notice", "admission",
+    "exam", "semester", "roll", "fee", "fees", "registration", "forms",
+}
+
+NAME_EXCLUDE_TOKENS = {
+    "hptu", "himtu", "exam", "schedule", "syllabus", "notice", "admission",
+    "result", "roll", "semester", "sem", "fee", "fees", "date", "when",
+    "what", "who", "where", "why", "how", "link", "portal", "help",
+}
+
 # In-memory chat logs
 chat_logs = []
 
@@ -65,7 +86,72 @@ RESPONSE RULES:
 5. Use bullet points and emojis for readability.
 6. If you don't have specific data, give the relevant portal link.
 7. For general knowledge questions (not HPTU-specific), answer directly from your knowledge.
-8. When asked "who made you" or "who created you", credit **Kunal Chauhan** (B.Tech CSE, HPTU)."""
+8. When asked "who made you" or "who created you", credit **Kunal Chauhan** (B.Tech CSE, HPTU).
+9. Do NOT invent notice titles, dates, links, results, or PDF details. Use only provided data for HPTU-specific facts.
+10. If required details are missing (for example course/branch/semester), ask a short clarifying question first.
+11. If no exact match exists in the provided data, explicitly say so and share the closest official link."""
+
+
+def _normalize_text(text):
+    """Normalize free text for matching/scoring."""
+    cleaned = re.sub(r"[^a-z0-9]+", " ", str(text).lower())
+    return re.sub(r"\s+", " ", cleaned).strip()
+
+
+def _tokenize(text):
+    """Tokenize text while dropping filler words."""
+    normalized = _normalize_text(text)
+    return {t for t in normalized.split() if t and t not in STOP_WORDS and len(t) > 1}
+
+
+def _extract_semester_number(text):
+    """Extract requested semester from query if present."""
+    normalized = _normalize_text(text)
+    sem_match = re.search(r"\b([1-8])(?:st|nd|rd|th)?\s*(?:sem|semester)\b", normalized)
+    if sem_match:
+        return int(sem_match.group(1))
+    return 0
+
+
+def _is_hptu_domain_query(user_msg):
+    """Detect if the question is likely HPTU-domain and should prefer stronger grounding."""
+    msg = _normalize_text(user_msg)
+    if any(keyword in msg for keyword in HPTU_DOMAIN_KEYWORDS):
+        return True
+
+    # Roll-number style queries are usually result/domain-specific.
+    if re.search(r"\b\d{5,15}\b", msg):
+        return True
+
+    return False
+
+
+def _looks_like_candidate_name_query(user_msg):
+    """Heuristic: detect plain full-name inputs for result-by-name lookup."""
+    raw = (user_msg or "").strip()
+    # Tolerate common trailing punctuation in chat input.
+    raw = re.sub(r"[\?\!\.,;:]+$", "", raw)
+    msg = _normalize_text(raw)
+    if not msg:
+        return False
+
+    # Avoid triggering on complex sentence-like queries.
+    if any(ch in raw for ch in "@#$/\\"):
+        return False
+
+    tokens = msg.split()
+    if len(tokens) < 2 or len(tokens) > 4:
+        return False
+
+    for token in tokens:
+        if not token.isalpha():
+            return False
+        if token in NAME_EXCLUDE_TOKENS:
+            return False
+        if len(token) < 2:
+            return False
+
+    return True
 
 
 def _refresh_cache():
@@ -139,17 +225,48 @@ def _detect_query_topics(user_msg):
     return topics
 
 
-def _search_items(items, query, fields=("title",), max_results=20):
-    """Fast keyword search across a list of dicts."""
-    query_words = query.lower().split()
+def _search_items(items, query, fields=("title",), max_results=20, min_score=1.0):
+    """Weighted search across list items for better precision on mixed user queries."""
+    query_norm = _normalize_text(query)
+    query_tokens = _tokenize(query)
+    requested_sem = _extract_semester_number(query)
     results = []
+
     for item in items:
-        text = " ".join(str(item.get(f, "")) for f in fields).lower()
-        score = sum(1 for w in query_words if w in text)
-        if score > 0:
+        raw_text = " ".join(str(item.get(f, "")) for f in fields)
+        item_norm = _normalize_text(raw_text)
+        if not item_norm:
+            continue
+
+        item_tokens = _tokenize(raw_text)
+        score = 0.0
+
+        # Strong signal: full phrase hit.
+        if query_norm and query_norm in item_norm:
+            score += 6.0
+
+        # Token overlap for partial intent matches.
+        overlap = len(query_tokens & item_tokens)
+        score += overlap * 1.5
+
+        # Prefix overlap catches partial words like "elect" -> "electrical".
+        for token in query_tokens:
+            if len(token) >= 4 and any(it.startswith(token) for it in item_tokens):
+                score += 0.25
+
+        # Semester consistency is important for PYQ/syllabus lookups.
+        item_sem = int(item.get("semester", 0) or 0)
+        if requested_sem and item_sem:
+            if requested_sem == item_sem:
+                score += 2.0
+            else:
+                score -= 1.0
+
+        if score >= min_score:
             results.append((score, item))
+
     results.sort(key=lambda x: x[0], reverse=True)
-    return [r[1] for r in results[:max_results]]
+    return [item for _, item in results[:max_results]]
 
 
 def _build_smart_context(user_message):
@@ -169,7 +286,8 @@ def _build_smart_context(user_message):
             _context_cache.get("pyq", []),
             user_message,
             fields=("title", "course", "branch", "subject"),
-            max_results=30
+            max_results=20,
+            min_score=2.0,
         )
         if pyq_papers:
             pyq_text = "\n📝 MATCHING PYQ PAPERS (from hptuonline.com):\n"
@@ -201,7 +319,15 @@ def _build_smart_context(user_message):
 
     # ── Notices: Only top 10 recent ──
     if "notices" in topics:
-        notices = _context_cache.get("notices", [])[:10]
+        notices = _search_items(
+            _context_cache.get("notices", []),
+            user_message,
+            fields=("title", "date", "last_date", "category"),
+            max_results=10,
+            min_score=1.0,
+        )
+        if not notices:
+            notices = _context_cache.get("notices", [])[:5]
         if notices:
             notice_text = "\n📋 LATEST NOTICES:\n"
             for n in notices:
@@ -217,7 +343,8 @@ def _build_smart_context(user_message):
             _context_cache.get("documents", []),
             user_message,
             fields=("title", "category", "program"),
-            max_results=15
+            max_results=12,
+            min_score=1.6,
         )
         if docs:
             doc_text = "\n📂 MATCHING DOCUMENTS:\n"
@@ -234,7 +361,8 @@ def _build_smart_context(user_message):
             _context_cache.get("syllabus", []),
             user_message,
             fields=("title", "program"),
-            max_results=10
+            max_results=10,
+            min_score=1.4,
         )
         if syllabus:
             syl_text = "\n📚 SYLLABUS:\n"
@@ -247,7 +375,15 @@ def _build_smart_context(user_message):
 
     # ── Fees ──
     if "fees" in topics:
-        fees = _context_cache.get("fees", [])[:10]
+        fees = _search_items(
+            _context_cache.get("fees", []),
+            user_message,
+            fields=("title", "description", "program", "category"),
+            max_results=10,
+            min_score=1.0,
+        )
+        if not fees:
+            fees = _context_cache.get("fees", [])[:5]
         if fees:
             fees_text = "\n💰 FEES INFO:\n"
             for f in fees:
@@ -269,14 +405,52 @@ def get_chat_response(user_message, pdf_text=""):
     """
     from backend import co
 
+    # Live timeline/date questions (e.g., HPCET date) are handled through
+    # deterministic web lookup to improve factual accuracy and keep replies concise.
+    try:
+        from backend.services.web_lookup_service import lookup_exact_date_details
+
+        date_lookup = lookup_exact_date_details(user_message)
+        if date_lookup.get("ok"):
+            reply = date_lookup.get("answer", "")
+
+            log_entry = {
+                "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "user": user_message[:100],
+                "bot": reply[:150],
+            }
+            chat_logs.append(log_entry)
+            if len(chat_logs) > 50:
+                chat_logs.pop(0)
+
+            try:
+                from backend.services.notice_service import save_chat_log
+                save_chat_log(user_message, reply)
+            except Exception:
+                pass
+
+            return reply
+
+        if date_lookup.get("reason") in {"no_exact_date_found", "no_search_results"}:
+            fallback_link = date_lookup.get("fallback_link", "https://www.himtu.ac.in/en/admissions")
+            return (
+                "I could not confirm an exact official date right now. "
+                f"Please check this official source: {fallback_link}"
+            )
+    except Exception as e:
+        print(f"Date lookup handler error: {e}")
+
     normalized = (user_message or "").lower().strip()
     has_roll = re.search(r"\b\d{5,15}\b", user_message or "") is not None
+    has_plain_name = _looks_like_candidate_name_query(user_message or "")
     is_result_intent = (
         "result" in normalized
         or "roll" in normalized
         or "marksheet" in normalized
+        or "name" in normalized
         or (has_roll and any(k in normalized for k in ["sem", "semester", "btech", "hptu"]))
         or normalized.isdigit()
+        or has_plain_name
     )
 
     # Result lookups are handled with deterministic scraping, not LLM generation.
@@ -303,6 +477,12 @@ def get_chat_response(user_message, pdf_text=""):
             return reply
         except Exception as e:
             print(f"Result intent handler error: {e}")
+            # Keep result flow deterministic for the chat screen.
+            return (
+                "I could not fetch the result right now due to a temporary issue.\n"
+                "Please try again in a moment.\n"
+                "Result portal: https://himturesult.indiaresults.com/hp/himtu/hp-himtu/query.aspx?id=1800266751"
+            )
 
     if not co:
         return "AI service is not configured. Please set the COHERE_API_KEY."
@@ -326,13 +506,15 @@ def get_chat_response(user_message, pdf_text=""):
             {"role": "user", "content": user_message},
         ]
 
-        # Use faster model for general questions, full model only when data-heavy
+        # Prefer stronger model for HPTU-domain questions and context-heavy requests.
         topics = _detect_query_topics(user_message)
-        model = "command-r7b-12-2024" if not topics else "command-a-03-2025"
+        is_hptu_domain = _is_hptu_domain_query(user_message)
+        model = "command-a-03-2025" if topics or is_hptu_domain else "command-r7b-12-2024"
 
         response = co.chat(
             model=model,
             messages=messages,
+            temperature=0.2,
         )
 
         reply = response.message.content[0].text
