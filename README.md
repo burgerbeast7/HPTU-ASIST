@@ -33,6 +33,19 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - Supports user-uploaded PDF scanning and Q&A
 - Markdown-formatted responses with clickable links
 
+### 🎓 Exam Results Lookup
+- Search exam results by **roll number** or **student name**
+- Multi-exam fallback system for legacy results (cascades through recent exams if not found in default)
+- Real-time parsing of HPTU/IndiaResults portal data
+- Displays student name, result status (PASS/FAIL), SGPA, CGPA, and subject-wise marks with grades
+- Integrated directly into chat — just type "result [roll no]" or "[student name]"
+
+### 📅 Live Web Search for Exam Dates
+- Exact date lookups using Google Custom Search API (with DuckDuckGo fallback)
+- Answers queries like "When was HPCET exam 2026?" with precise dates and sources
+- Date pattern extraction (DDth MMMM YYYY, MMMM DD YYYY, DD/MM/YYYY formats)
+- Includes source links and official HPTU website references
+
 ### 🎤 Voice Command Input
 - Speak your queries using the built-in microphone button
 - Uses the **Web Speech API** for real-time speech-to-text
@@ -67,6 +80,11 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - Manual scraper trigger and status monitoring
 - View chat logs and scraper statistics
 - Manage notices and university data
+
+### 🔍 Intelligent Query Routing
+- **Intent Detection System**: Automatically recognizes result queries (by roll number or student name) vs. general queries
+- **Date Query Processing**: Extracts and validates dates using regex patterns (DDth MMMM YYYY, etc.)
+- **Fallback Architecture**: Multi-exam result lookup cascades through recent exam sessions if result not found in default exam
 
 ### 🎨 UI/UX
 - Themed to match the official HPTU website (navy blue + gold palette)
@@ -110,11 +128,13 @@ HPTU-AI-Assistant/
 │   │   ├── api_routes.py       # REST API endpoints (notices, syllabus, fees)
 │   │   └── admin_routes.py     # Admin dashboard & scraper controls
 │   └── services/
-│       ├── chat_service.py     # Cohere AI chatbot with real-time context
-│       ├── scraper_service.py  # HPTU website scraper (notices, docs, PDFs)
-│       ├── pyq_service.py      # PYQ scraper for hptuonline.com (structured data)
-│       ├── notice_service.py   # MongoDB CRUD for notices, syllabus, fees, docs, PYQ
-│       └── pdf_service.py      # PDF text extraction service
+│       ├── chat_service.py         # Cohere AI chatbot with real-time context
+│       ├── result_service.py       # HPTU exam result lookup (by roll/name, multi-exam fallback)
+│       ├── web_lookup_service.py   # Live web search for exam dates (Google + DuckDuckGo)
+│       ├── scraper_service.py      # HPTU website scraper (notices, docs, PDFs)
+│       ├── pyq_service.py          # PYQ scraper for hptuonline.com (structured data)
+│       ├── notice_service.py       # MongoDB CRUD for notices, syllabus, fees, docs, PYQ
+│       └── pdf_service.py          # PDF text extraction service
 │
 ├── frontend/                   # Frontend application
 │   ├── templates/
@@ -194,10 +214,31 @@ HPTU-AI-Assistant/
 
 ### Google Setup For Exact Date Answers (Optional but Recommended)
 
-- Create a Programmable Search Engine and add `himtu.ac.in` as a site to search.
-- Enable Custom Search JSON API in Google Cloud.
-- Add `GOOGLE_API_KEY` and `GOOGLE_CSE_ID` to `.env`.
-- With this enabled, queries like "When was HPCET exam 2026?" are answered using live web lookup with source links.
+To enable live web search for exam dates and schedules:
+
+1. **Create a Google Custom Search Engine**
+   - Go to [Google Programmable Search Engine](https://programmablesearchengine.google.com/)
+   - Create a new search engine and add `himtu.ac.in` as the only searchable site
+   - Note your **Search Engine ID**
+
+2. **Enable Google Custom Search API**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project
+   - Search for "Custom Search API" and enable it
+   - Create an API key (type: Browser key)
+
+3. **Add to environment variables**
+   ```env
+   GOOGLE_API_KEY=your_google_api_key
+   GOOGLE_CSE_ID=your_search_engine_id
+   ```
+
+With this enabled, the chatbot will answer queries like:
+- "When was HPCET exam 2026?"
+- "When is the last date for admission HPTU 2026?"
+- "What is the exam schedule for B.Tech 5th semester?"
+
+**Note:** Without Google credentials, the system falls back to DuckDuckGo search for date queries.
 
 ---
 
@@ -252,6 +293,16 @@ HPTU-AI-Assistant/
 | `/admin/login` | GET/POST | Admin login |
 | `/admin/dashboard` | GET | Admin dashboard |
 | `/admin/trigger-scrape` | POST | Manually trigger scraper |
+
+### Chat Commands for Results
+
+Use these commands in the chat to retrieve exam results:
+
+| Command | Example | Description |
+|---|---|---|
+| **Result by Roll** | `result 23015103036` | Fetch exam result by student roll number |
+| **Result by Name** | `kunal chauhan` | Search exam result by student name (shows all matches) |
+| **Date Query** | `when was hpcet exam 2026?` | Get exact exam date with sources (requires Google setup) |
 
 ---
 
