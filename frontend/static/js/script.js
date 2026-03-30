@@ -106,6 +106,46 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // ═══════ CALENDAR COUNTDOWN ═══════
+    function initCountdown() {
+        // Set target date to May 25, 2026 09:00:00 (End Semester Practical Exams)
+        const targetDate = new Date("May 25, 2026 09:00:00").getTime();
+
+        const cdDays = document.getElementById('cd-days');
+        const cdHours = document.getElementById('cd-hours');
+        const cdMins = document.getElementById('cd-mins');
+        const cdSecs = document.getElementById('cd-secs');
+
+        if (!cdDays) return;
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                cdDays.textContent = "00";
+                cdHours.textContent = "00";
+                cdMins.textContent = "00";
+                cdSecs.textContent = "00";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            cdDays.textContent = days.toString().padStart(2, '0');
+            cdHours.textContent = hours.toString().padStart(2, '0');
+            cdMins.textContent = minutes.toString().padStart(2, '0');
+            cdSecs.textContent = seconds.toString().padStart(2, '0');
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
+    initCountdown();
+
     // ═══════ COUNTER ANIMATION ═══════
     function animateCounter(el, target) {
         const dur = 1200;

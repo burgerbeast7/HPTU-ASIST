@@ -32,6 +32,8 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - Provides **direct PDF/document download links** in responses
 - Supports user-uploaded PDF scanning and Q&A
 - Markdown-formatted responses with clickable links
+- **Student Helpdesk Mode**: Handles 12+ types of student issues (result disputes, fee problems, name corrections, migration, hostel, ragging) with correct contacts, emails, and step-by-step resolution
+- **Consultant & Guide Role**: Acts as a career counselor — provides branch-wise career paths, placement preparation tips, GATE/CAT/GRE roadmaps, semester-wise study plans, and motivational guidance
 
 ### 🎓 Exam Results Lookup
 - Search exam results by **roll number** or **student name**
@@ -85,6 +87,26 @@ An AI-powered smart helpdesk system for **Himachal Pradesh Technical University 
 - **Intent Detection System**: Automatically recognizes result queries (by roll number or student name) vs. general queries
 - **Date Query Processing**: Extracts and validates dates using regex patterns (DDth MMMM YYYY, etc.)
 - **Fallback Architecture**: Multi-exam result lookup cascades through recent exam sessions if result not found in default exam
+
+### 📅 Academic Calendar
+- Integrated **official HPTU Academic Calendar 2025-26** (Even Semester) with real dates
+- **Live countdown timer** ticking down to the next major event (End Semester Practical Exams)
+- Beautiful event cards showing: End of Teaching, Practical Exams, Theory Exams, Summer Vacations
+- Calendar data synced to the AI chatbot — ask "When do exams start?" and get accurate answers
+- Fully responsive with dark/light mode support
+
+### 🎫 Student Helpdesk & Issue Resolution
+- AI-powered issue routing for **12+ common student problems**
+- Guides students with exact steps, contact numbers, emails, and portal links
+- Handles: result issues, re-evaluation, name correction, migration, fee problems, hostel complaints, ragging (with emergency helpline), exam forms, attendance shortage, duplicate marksheets
+- Empathetic and professional tone with actionable next steps
+
+### 🎓 Career Consultant & Academic Guide
+- Branch-wise career guidance (CSE, ECE, ME, CE, EE, BBA, BCA, Pharmacy)
+- Placement preparation roadmap: DSA, projects, internships, aptitude, HR interviews
+- Higher studies guidance: GATE, CAT, GRE/IELTS, UPSC, GPAT with timelines
+- Semester-wise study tips (1st sem through 8th sem)
+- Supportive and motivating responses for confused or stressed students
 
 ### 🎨 UI/UX
 - Themed to match the official HPTU website (navy blue + gold palette)
@@ -338,6 +360,9 @@ web: gunicorn run:app
 - [x] Voice-based query input (Web Speech API)
 - [x] PYQ system with structured data (course/branch/semester/subject)
 - [x] Multi-page notice scraping from official HPTU site
+- [x] Academic Calendar with live countdown timer
+- [x] Student Helpdesk — AI-powered issue resolution with contact routing
+- [x] Career Consultant & Guide — placement tips, GATE/CAT roadmaps, branch guidance
 - [ ] Push notifications for new notices
 - [ ] Student login with personalized dashboard
 - [ ] Integration with HPTU exam portal APIs
